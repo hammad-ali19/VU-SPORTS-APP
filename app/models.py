@@ -1,0 +1,153 @@
+from keyword import kwlist
+
+from .extensions import db
+from sqlalchemy import UniqueConstraint, String, CheckConstraint, Enum, ForeignKey, Integer, Text, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+import enum
+from flask_login import UserMixin
+from typing import Optional, List
+
+class userStatus(enum.Enum):
+    ACTIVE = 'active'
+    PENDING = 'pending'
+    BLOCKED = 'blocked'
+
+class userRole(enum.Enum):
+    ADMIN = 'admin'
+    COACH = 'coach'
+    PARTICIPANT = 'participant'
+
+
+class User(db.Model, UserMixin):
+
+    __tablename__ = 'users'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    email: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[userStatus] = mapped_column(Enum(userStatus), default=userStatus.PENDING, nullable=False)
+    role: Mapped[userRole] = mapped_column(Enum(userRole), nullable=False)
+
+    participant: Mapped["Participant"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
+    coach: Mapped["Coach"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
+    admin: Mapped["Admin"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+    def is_admin(self):
+        return self.role == 'admin'
+
+    def is_coach(self):
+        return self.role == 'coach'
+
+    def is_participant(self):
+        return self.role == 'participant'
+
+    def __repr__(self):
+        return f"Id: {self.id} Name: {self.name} and Email: {self.email}"
+
+    __table_args__ = (
+        CheckConstraint(
+            "name REGEXP '^[A-Za-z ]+$'",
+            name='chk_name_letter_only'
+        ),    
+    )
+
+class Participant(db.Model, UserMixin):
+
+    __tablename__ = 'participants'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    university_id: Mapped[str] = mapped_column(String(14), nullable=True)
+    max_sports_allowed: Mapped[int] = mapped_column(Integer, server_default="2", default=2, nullable=False)
+    achievements: Mapped[str] = mapped_column(Text, nullable=True)
+    past_participation: Mapped[str] = mapped_column(Text, nullable=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    user: Mapped["User"] = relationship(
+        back_populates="participant"
+    )
+
+    sports: Mapped[List['ParticipantSport']] = relationship(
+        back_populates='participant',
+        cascade='all, delete-orphan'
+    )
+
+
+class Coach(db.Model, UserMixin):
+
+    __tablename__ = 'coaches'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    expertise: Mapped[str] = mapped_column(Text, nullable=False)
+    availability: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+
+    user: Mapped["User"] = relationship(back_populates="coach")
+    sport: Mapped['Sport'] = relationship(back_populates='coach', uselist=False)
+
+    def is_available(self):
+        return self.availability
+
+class Admin(db.Model, UserMixin):
+
+    __tablename__ = 'admins'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    level: Mapped[str] = mapped_column(String(10), server_default="NORMAL", default="NORMAL")
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete='CASCADE'), unique=True, nullable=False)
+
+    user: Mapped['User'] = relationship(back_populates='admin')
+
+class Sport(db.Model):
+
+    __tablename__ = 'sports'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    max_participants: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    coach_id: Mapped[int] = mapped_column(ForeignKey("coaches.id", ondelete="SET NULL"), unique=True, nullable=True)
+    coach: Mapped['Coach'] = relationship(back_populates='sport', uselist=False)
+
+    participants: Mapped[List["ParticipantSport"]] = relationship(
+        back_populates='sport',
+        cascade='all, delete-orphan'
+    )
+
+    def __repr__(self):
+        return f"Id: {self.id} Name: {self.name} Max-Participants {self.max_participants}"
+
+
+class ParticipantSport(db.Model):
+
+    __tablename__ = 'participants_sports'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default='pending',
+        server_default='pending'
+    )
+    approved_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey('coaches.id'),
+        nullable=True
+    )
+    participant_id: Mapped[int] = mapped_column(
+        ForeignKey("participants.id", ondelete='CASCADE'),
+        nullable=False
+    )
+    sport_id: Mapped[int] = mapped_column(
+        ForeignKey("sports.id", ondelete='CASCADE'),
+        nullable=False
+    )
+
+    participant: Mapped['Participant'] = relationship(back_populates='sports')
+    sport: Mapped['Sport'] = relationship(back_populates='participants')
+
+    __table_args__ = (
+        db.UniqueConstraint('participant_id', 'sport_id', name='uq_participant_sport'),
+    )
+

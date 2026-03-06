@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard</title>
+</head>
+<body>
+    <p>Welcome, {{ current_user.name | capitalize}}</p>
+    <p>You are managing {{sport.name}}</p>
+    {% if participants %}
+        {% for p in participants %}
+            <div>
+                <span style="display: inline;">{{p.participant.user.name | capitalize}} | {{p.status | capitalize}} |</span>
+                {% if p.status != 'active'%}
+                    <form action="{{url_for('coach.approve', ps_id=p.id)}}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                        <button type="submit">Approve</button>
+                    </form>
+                {% else %}
+                    <button disabled>Approved</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <a href="{{url_for('auth.logout')}}">logout</a>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	<title>Register</title>
+	<style>
+		.navcolor {
+			background-color: rgb(89, 0, 255);
+		}
+	</style>
+</head>
+<body>
+	<nav class="navcolor navbar navbar-dark shadow px-3">
+		<span><a href="{{url_for('home')}}" target="_blank" class="navbar-brand mb-0 h1">VU Sports Society</a></span>
+		<div class="d-flex align-items-center ms-auto">
+			<a href="https://vu.edu.pk/" class="btn btn-light btn-sm" target="_blank">
+				Visit VU Website
+			</a>
+		</div>
+	</nav>
+	<div class="container">
+		<div class="row justify-content-center">	
+			<div class="col-12 col-md-6 col-lg-5">
+				<div class="card shadow m-2">
+					<div class="card-body">
+						{% with messages = get_flashed_messages() %}
+							{% if messages %}
+								{% for message in messages %}
+									<div class="error">{{ message }}</div>
+								{% endfor %}
+							{% endif %}
+						{% endwith %}
+
+						<form action="{{url_for('auth.register')}}" method="POST" novalidate>
+							{{ form.hidden_tag() }}
+							<fieldset class="form-group">
+								<legend  class="border-bottom mb-2 pb-2">Register</legend>
+
+								<div class="mb-3">
+									{{ form.name.label }}
+									{% if form.name.errors %}
+										{{ form.name(class="form-control is-invalid") }}
+										<div class="invalid-feedback">
+											{% for error in form.name.errors %}
+												<span>{{ error }}</span>
+											{% endfor %}
+										</div>
+									{% else %}
+										{{ form.name(class=("form-control"))}}
+									{% endif %}
+								</div>
+
+								<div class="form-group">
+									{{ form.email.label }}
+									{% if form.email.errors %}
+										{{ form.email(class="form-control is-invalid") }}
+										<div class="invalid-feedback">
+											{% for error in form.email.errors %}
+												<span>{{ error }}</span>
+											{% endfor %}
+										</div>
+									{% else %}
+										{{ form.email(class=("form-control"))}}
+									{% endif %}
+								</div>
+
+								<div class="form-group">
+									{{ form.password.label }}
+									{% if form.password.errors %}
+										{{ form.password(class="form-control is-invalid") }}
+										<div class="invalid-feedback">
+											{% for error in form.password.errors %}
+												<span>{{ error }}</span>
+											{% endfor %}
+										</div>
+									{% else %}
+										{{ form.password(class=("form-control"))}}
+									{% endif %}
+								</div>
+									
+								<div class="form-group">
+									{{ form.confirm_password.label }}
+									{% if form.confirm_password.errors %}
+										{{ form.confirm_password(class="form-control is-invalid") }}
+										<div class="invalid-feedback">
+											{% for error in form.confirm_password.errors %}
+												<span>{{ error }}</span>
+											{% endfor %}
+										</div>
+									{% else %}
+										{{ form.confirm_password(class=("form-control"))}}
+									{% endif %}
+								</div>
+								
+								<div class="form-group">
+									{{form.role.label}}
+									{% if form.role.errors %}
+										<select class="form-select is-invalid" name="{{form.role.name}}" id="form.role.id">
+											{% for option in form.role %}
+												{% if loop.first %}
+													{{ option(disabled="")}}
+												{% else %}
+													{{option}}
+												{% endif %}
+											{% endfor %}								
+										</select>
+										<div class="invalid-feedback">
+											{% for error in form.role.errors %}
+												<span>{{ error }}</span>
+											{% endfor %}
+										</div>
+									{% else %}
+										<select class="form-select" name="{{form.role.name}}" id="form.role.id">
+											{% for option in form.role %}
+												{% if loop.first %}
+													{{ option(disabled="")}}
+												{% else %}
+													{{option}}
+												{% endif %}
+											{% endfor %}								
+										</select>
+									{% endif %}
+								</div>
+
+								<div class="form-group">
+									{{ form.sports.label(class="form-label")}}
+									{% if form.sports.errors %}
+										{% for subfield in form.sports %}
+											<div class="form-check">
+												{{subfield(class="form-check-input is-invalid")}}
+												{{subfield.label(class="form-check-label")}}
+											</div>
+										{% endfor %}
+										<!-- {{ form.sports(class="form-control is-invalid")}} -->
+										<div class="invalid-feedback d-block">
+											{% for error in form.sports.errors %}
+												<span>{{ error }}</span>
+											{% endfor %}
+										</div>
+									{% else %}
+										{% for subfield in form.sports %}
+											<div class="form-check">
+												{{subfield(class="form-check-input")}}
+												{{subfield.label(class="form-check-label")}}
+											</div>
+										{% endfor %}
+									{% endif %}
+								</div>
+								<div class="d-grid">
+									{{ form.register(class="btn btn-small btn-primary mt-2") }}
+								</div>
+								<div class="d-inline-flex justify-content-center align-items-center gap-2 mt-3 w-100">
+									<small class="text-muted">Have an account? </small>
+									<a href="{{url_for('auth.login')}}">Login</a>
+								</div>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
