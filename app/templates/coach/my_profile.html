@@ -1,0 +1,8 @@
+{% extends 'coach/base.html' %}
+
+{% block title %}<title>My Profile</title>{% endblock %}
+
+{% block content %}
+    <p>Hey, {{ current_user.name }}. You are managing {{ current_user.coach.sport.name }}</p>
+{% endblock %}
+

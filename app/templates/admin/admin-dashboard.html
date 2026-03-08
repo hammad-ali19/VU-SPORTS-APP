@@ -1,71 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard </title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-</head>
-<body>
-    <h1 class="m-1">Welcome, Admin</h1>
-
-    <button class="btn btn-primary m-1 shadow-none" id="pcbtn" onclick="loadPendingCoachRequests()">Pending Coach Requests</button>
-    <div id="coach-results"></div>
-
-</body>
-
-    <script>
-        async function loadPendingCoachRequests() {
-            try {
-                const response = await fetch("{{ url_for('admin.get_pending_coach_requests')}}");
-                const data = await response.json();
-                // console.log(data);
-                if (data.length == 0) {
-                    alert("No pending requests available");
-                }
-                else {
-                    const container = document.getElementById("coach-results")
-                    container.innerHTML = "";
-                    container.classList.add("m-1")
-                    data.forEach(coach => {
-                        const card = document.createElement("div");
-                        card.classList.add("coach-card");
-
-                        const name = document.createElement("h3");
-                        name.textContent = coach.name;
-
-                        status = coach.status;
-                        const info = document.createElement("p");
-                        info.style.display = "inline";
-                        info.textContent = `${coach.sport} | ${coach.status.toUpperCase()}`;
-
-                        const approve = document.createElement("a");
-                        approve.setAttribute("href", "#");
-                        approve.classList.add("btn", "btn-success", "ms-2", "btn-sm")
-                        approve.textContent = "Approve";
-
-                        const reject = document.createElement("a");
-                        reject.setAttribute("href", "#");
-                        reject.classList.add("btn", "btn-danger", "ms-2", "btn-sm")
-                        reject.textContent = "Reject";
-                        card.appendChild(name);
-                        card.appendChild(info);
-                        card.appendChild(approve);
-                        card.appendChild(reject);
-                        container.appendChild(card);
-                    });
-                }
-            }
-            catch(error) {
-                console.error(error);
-                alert("An error occurred");
-            }
-        }
-    </script>
-
-</html> -->
-
-
-
 
 <!-- templates/admin/dashboard.html -->
 {% extends "admin/base.html" %}
@@ -102,9 +34,10 @@
     </div>
 </div>
 
-<h5>Recent User Registrations</h5>
+<h5>All Users</h5>
+<input type="text" id="searchInput" placeholder="Search by name..." onkeyup="searchTable()">
 <div class="table-responsive">
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="approvalTable">
         <thead>
             <tr>
                 <th>Name</th>
@@ -115,7 +48,7 @@
         </thead>
         <tbody>
             {% if users %}
-                {% for user in users | reverse %}
+                {% for user in users %}
                     <tr>
                         <td>{{user.name | capitalize}}</td>
                         <td>{{user.role.value | capitalize}}</td>
@@ -125,7 +58,8 @@
                             {% elif user.status.value == 'pending' %} bg-warning
                             {% endif %}">
                             {{user.status.value | upper}}
-                            </span></td>
+                            </span>
+                        </td>
                         <td>
                             {% if user.status.value == 'pending'%}
                                 <form action="{{ url_for('admin.approve', user_id=user.id) }}" method="POST" style="display:inline;">
@@ -144,12 +78,6 @@
                                     Approved
                                 </button>
                             {% endif %}
-                            
-                            <!-- <a href="{{url_for('admin.approve', user_id=user.id)}}" class="btn btn-primary btn-sm">Approve {{user.id}}</a> -->
-                            <!-- <a href="{{url_for('admin.reject_user')}}" class="btn btn-secondary btn-sm">Reject {{user.id}}</a> -->
-
-                            <!-- <button class="btn btn-primary btn-sm">Approve {{user.id}} </button> -->
-                            <!-- <button class="btn btn-secondary btn-sm">Reject {{user.id}}</button> -->
                         </td>
                     </tr>
                 {% endfor %}
@@ -158,4 +86,28 @@
     </table>
 </div>
 
+{% endblock %}
+
+{% block script %}
+<script>
+    function searchTable() {
+        let input = document.getElementById("searchInput");
+        let filter = input.value.toLowerCase();
+        let table = document.getElementById("approvalTable");
+        let tr = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < tr.length; i++) {
+            let td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                let textValue = td.textContent || td.innerText;
+
+                if (textValue.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
 {% endblock %}

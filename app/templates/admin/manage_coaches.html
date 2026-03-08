@@ -1,1 +1,14 @@
 {% extends "admin/base.html"%}
+
+{% block title %} <title>Coaches</title>{% endblock %}
+
+{% block content %}
+
+    <h5>Coaches</h5>
+    {% if coaches %}
+        {% for c in coaches %}
+            <div>{{ c.name | capitalize }} | {{ c.email }} | {{ c.coach.sport.name }}</div>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

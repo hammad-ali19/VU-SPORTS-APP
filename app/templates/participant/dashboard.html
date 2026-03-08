@@ -1,18 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Participant Dashboard</title>
-</head>
-<body>
-    <h4>Welcome, {{ current_user.name }}</h4>
-    <a href="{{url_for('auth.logout')}}">logout</a><br>
+{% extends 'participant/base.html' %}
 
+{% block title %}<title>Dashboard</title>{% endblock %}
+
+{% block content %}
+    <h6>Your registerd sports: </h6>
     <ul>
         {% for sport in sports %}
-            <li>{{sport}}</li>
+        <li>{{sport.sport.name}} - 
+            <span class="badge {% if sport.status == 'active' %} bg-success 
+            {% elif sport.status == 'pending' %} bg-warning 
+            {% endif %}">{{ sport.status | capitalize }}</span> | 
+            {% if sport.status == 'active' %}
+                You can participate in activities for this sport.
+            {% else %}
+                You can't participate in activities for this sport before coach approval.
+            {% endif %}
+            
+        </li>
         {% endfor %}
     </ul>
-</body>
-</html>
+{% endblock %}

@@ -4,8 +4,7 @@ from .forms import RegistrationForm, LoginForm
 from .. import db
 from sqlalchemy import select
 from ..models import User, userRole, Participant, userStatus, ParticipantSport, Sport, Coach
-from flask_login import login_user, logout_user, login_required, current_user
-from ..decorators import required_role
+from flask_login import login_user, logout_user, login_required
 # from werkzeug.security import generate_password_hash, check_password_hash
 
 @auth_bp.route("/")
@@ -14,14 +13,12 @@ def redirect_login():
 
 @auth_bp.route("/register", methods=['POST', 'GET'])
 def register():
+	from_admin = session.get("from_admin", False)
+	print(f"before form submission: {from_admin}")
 	form = RegistrationForm()
-	# print(form.name.data)
-	# print(form.email.data)
-	# print(form.password.data)
-	# print(form.role.data)
-	# print(form.sports.data)
 
 	if form.validate_on_submit():
+
 		name = form.name.data
 		role = form.role.data
 		selected_sports_ids = form.sports.data
@@ -51,6 +48,12 @@ def register():
 				db.session.add(ps)
 			db.session.commit()
 			# print("participant-sport added")
+			print(f"after form submission: {from_admin}")
+			if from_admin:
+				session.pop("from_admin", None)
+				print(f"in auth after adding participant: {str(session.items())}")
+				flash("Participant added successfully", category='success')
+				return redirect(url_for("admin.manage_participants"))
 			flash("successfully Registered! You will be able to login after caoch approval.", category='info')
 			return redirect(url_for("auth.login"))
 
@@ -105,12 +108,12 @@ def login():
 			elif user.email == email and user.password == password and user.role.value == role:
 				login_user(user)
 				sport = user.coach.sport.name
-				session['coach-sport'] = sport
-				# flash("You have successfully logged in", category="success")
+				# session['coach-sport'] = sport
+				flash("You have successfully logged in", category="success")
 				return redirect(url_for("coach.dashboard"))
 			else:
 				flash("Invalid Credentials", category="danger")
-	
+
 
 		elif role == 'participant':
 			if user.role.value != role:
@@ -129,13 +132,12 @@ def login():
 					sports.append(par_sport.sport.name)
 					status_approved = True
 					# break
-			session['sports'] = sports
+			# session['sports'] = sports
 			if status_approved:
 				if user.email == email and user.password == password and user.role.value == role:
 					login_user(user)
-					# flash("You have logged in successfully", category='success')
-
-					return redirect(url_for("participant.dashboard", sports=sports))
+					flash("You have logged in successfully", category='success')
+					return redirect(url_for("participant.dashboard"))
 				else:
 					flash ("Invalid Credentials 2", category='danger')
 					return render_template("login.html", form=form)
@@ -152,4 +154,5 @@ def logout():
 	logout_user()
 	# return render_template("login.html")
 	flash("You have logged out successfully", category='success')
+	session.pop('from_admin', None)
 	return redirect(url_for("auth.login"))

@@ -22,6 +22,19 @@ def dashboard():
 	return render_template("coach/dashboard.html", sport=sport, participants=sport.participants)
 
 
+@c_bp.route("/my-profile")
+@login_required
+@required_role(userRole.COACH)
+def my_profile():
+	return render_template("coach/my_profile.html")
+
+@c_bp.route("/manage-participants")
+@login_required
+@required_role(userRole.COACH)
+def manage_participants():
+	return render_template("coach/manage_participants.html")
+
+
 @c_bp.route("/approve/<int:ps_id>", methods=['POST'])
 @login_required
 @required_role(userRole.COACH)

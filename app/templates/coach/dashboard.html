@@ -1,28 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coach Dashboard</title>
-</head>
-<body>
-    <p>Welcome, {{ current_user.name | capitalize}}</p>
-    <p>You are managing {{sport.name}}</p>
-    {% if participants %}
-        {% for p in participants %}
-            <div>
-                <span style="display: inline;">{{p.participant.user.name | capitalize}} | {{p.status | capitalize}} |</span>
-                {% if p.status != 'active'%}
-                    <form action="{{url_for('coach.approve', ps_id=p.id)}}" method="POST" style="display: inline;">
-                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                        <button type="submit">Approve</button>
-                    </form>
-                {% else %}
-                    <button disabled>Approved</button>
+{% extends 'coach/base.html' %}
+
+{% block title %}<title>Dashboard</title>{% endblock %}
+
+{% block content %}
+    <div class="table-responsive">
+        
+        <h4>Recent Approval Requests</h4>
+        <input type="text" id="searchInput" placeholder="Search by name..." onkeyup="searchTable()">
+        <table class="table table-bordered" id="approvalTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Approve/Reject</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if participants %}
+                    {% for ps in participants[::-1][:10] %}
+                        <tr>
+                            <td>{{ ps.participant.user.name | capitalize }}</td>
+                            <td>
+                                <span>
+                                    {{ ps.status | capitalize }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if ps.status != 'active'%}
+                                <form action="{{url_for('coach.approve', ps_id=ps.id)}}" method="POST" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                    <button type="submit">Approve</button>
+                                </form>
+                                <form action="" method="POST" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                    <button type="submit">Reject</button>
+                                </form>
+                                {% else %}
+                                <button disabled>Approved</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
                 {% endif %}
-            </div>
-        {% endfor %}
-    {% endif %}
-    <a href="{{url_for('auth.logout')}}">logout</a>
-</body>
-</html>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+function searchTable() {
+    let input = document.getElementById("searchInput");
+    let filter = input.value.toLowerCase();
+    let table = document.getElementById("approvalTable");
+    let tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) {
+        let td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+            let textValue = td.textContent || td.innerText;
+
+            if (textValue.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+</script>
+{% endblock %}
