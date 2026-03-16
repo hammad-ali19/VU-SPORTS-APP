@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from .. import db
 from ..decorators import required_role
-from ..models import Sport, User, userRole, userStatus
+from ..models import Sport, User, userRole, userStatus, Venue, Event
 from . import a_bp
 
 
@@ -48,9 +48,19 @@ def approve(user_id):
     return redirect(url_for("admin.dashboard"))
 
 
-@a_bp.route("/reject_user")
+@a_bp.route("/reject_user", methods=['POST'])
 def reject_user():
-    pass
+    return 'Nothing here yet!'
+
+@a_bp.route("/block_user/<int:user_id>", methods=['POST', 'GET'])
+def block_user(user_id):
+    user = db.session.get(User, user_id)
+    if user is None:
+        abort(404)
+    user.status = userStatus.BLOCKED
+    db.session.commit()
+    print(user.status)
+    return redirect(url_for("admin.dashboard"))
 
 
 @a_bp.route("/manage-participants")
@@ -84,12 +94,24 @@ def manage_sports():
 
 @a_bp.route("/event-scheduling")
 def manage_event_scheduling():
-    return render_template("admin/event_scheduling.html")
+    venues = db.session.execute(select(Venue)).scalars().all()
+    sports = db.session.execute(select(Sport)).scalars().all()
+    return render_template("admin/event_scheduling.html", venues=venues, sports=sports)
+
+@a_bp.route("/add-event", methods=['POST'])
+def add_event():
+    time = request.form.get("time")
+    print(time)
+    hour, minute = time.split(":")
+    print(hour, "////", minute)
+    # print(f"{request.form.items}")
+    flash("Event Added successfully", category='success')
+    return redirect(url_for("admin.manage_event_scheduling"))
 
 
 
 @a_bp.route("/add_user", methods=['POST'])
-def add_participant():
+def add_user():
     if "from_admin" not in session:
         session["from_admin"] = 1
 

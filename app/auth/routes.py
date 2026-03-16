@@ -13,8 +13,9 @@ def redirect_login():
 
 @auth_bp.route("/register", methods=['POST', 'GET'])
 def register():
+	# if admin is registering user
 	from_admin = session.get("from_admin", False)
-	print(f"before form submission: {from_admin}")
+	# print(f"before form submission: {from_admin}")
 	form = RegistrationForm()
 
 	if form.validate_on_submit():
@@ -27,9 +28,9 @@ def register():
 		# hashed_password = generate_password_hash(form.password.data)
 		# print(len(hashed_password))
 		if role == 'participant':
-			user = User(name=name, email=email, password=form.password.data, status="ACTIVE", role=role.upper())
+			user = User(name=name, email=email, password=form.password.data, status=userStatus.ACTIVE, role=role.upper())
 		else:
-			user = User(name=name, email=email, password=form.password.data, status="PENDING", role=role.upper())
+			user = User(name=name, email=email, password=form.password.data, status=userStatus.PENDING, role=role.upper())
 		db.session.add(user)
 		db.session.commit()
 		# print("user added")
@@ -48,12 +49,12 @@ def register():
 				db.session.add(ps)
 			db.session.commit()
 			# print("participant-sport added")
-			print(f"after form submission: {from_admin}")
+			# print(f"after form submission: {from_admin}")
 			if from_admin:
 				session.pop("from_admin", None)
 				print(f"in auth after adding participant: {str(session.items())}")
 				flash("Participant added successfully", category='success')
-				return redirect(url_for("admin.manage_participants"))
+				return redirect(url_for("admin.dashboard"))
 			flash("successfully Registered! You will be able to login after caoch approval.", category='info')
 			return redirect(url_for("auth.login"))
 
@@ -72,7 +73,12 @@ def register():
 				c_id = db.session.execute(select(Coach.id).where(Coach.user_id==user_id)).scalars().first()
 				sp.coach_id = c_id
 				db.session.commit()
-				flash("Successfully registered you account! ")
+				if from_admin:
+					session.pop("from_admin", None)
+					print(f"in auth after adding participant: {str(session.items())}")
+					flash("Coach added successfully", category='success')
+					return redirect(url_for("admin.dashboard"))
+				flash("Successfully registered you account! Please wait for admin approval before login ", category='info')
 				return redirect(url_for("auth.login"))
 
 	return render_template("register.html", form=form)
@@ -124,7 +130,9 @@ def login():
 			# if not par_sports:
 			# 	flash("Invalid Credentials - 1", category='danger')
 			# 	return render_template("login.html", form=form)
-
+			if user.status == userStatus.BLOCKED:
+				flash("Your account is blocked. please contact administrator", category='danger')
+				return render_template('login.html', form=form)
 			status_approved = False
 			sports = []
 			for par_sport in par_sports:
@@ -142,7 +150,7 @@ def login():
 					flash ("Invalid Credentials 2", category='danger')
 					return render_template("login.html", form=form)
 			else:
-				flash("Your account is pending for approval from respective coach", category="danger")
+				flash("Your account is pending for approval from respective coach", category="info")
 				return render_template("login.html", form=form)
 
 	return render_template("login.html", form=form)

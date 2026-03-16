@@ -5,13 +5,13 @@
 {% block content %}
 
     <h5>Participants</h5>
-    <form method="POST" action="{{ url_for('admin.add_participant', from_admin=1) }}">
+    <form method="POST" action="{{ url_for('admin.add_user') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="from_admin" value="1">
         <button class="btn btn-success btn-sm">Add Participant</button>
     </form>
     {% if participants %}
-        {% for p in participants %}
+        {% for p in participants[::-1] %}
             <div class="d-flex gap-2">
                 <p>
                     {{p.id}} | {{ p.name | capitalize }} | {{ p.email }}

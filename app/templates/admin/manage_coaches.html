@@ -5,9 +5,23 @@
 {% block content %}
 
     <h5>Coaches</h5>
+        <form method="POST" action="{{ url_for('admin.add_user') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="from_admin" value="1">
+        <button class="btn btn-success btn-sm">Add Coach</button>
+    </form>
     {% if coaches %}
-        {% for c in coaches %}
-            <div>{{ c.name | capitalize }} | {{ c.email }} | {{ c.coach.sport.name }}</div>
+        {% for c in coaches[::-1] %}
+            <div class="d-flex gap-2">
+                <p>
+                    {{c.id}} | {{ c.name | capitalize }} | {{ c.email }} | {{ c.coach.sport.name}} | {{c.status.value | capitalize}}
+                </p>
+                <form action="{{url_for('admin.delete_user', u_id=c.id)}}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </div>
+            <!-- <div>{{ c.name | capitalize }} | {{ c.email }} | {{ c.coach.sport.name }}</div> -->
         {% endfor %}
     {% endif %}
 

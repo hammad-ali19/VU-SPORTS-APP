@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Database: `vuss`
 --
-CREATE DATABASE vuss IF NOT EXISTS;
+CREATE DATABASE IF NOT EXISTS vuss;
 USE vuss;
 -- --------------------------------------------------------
 

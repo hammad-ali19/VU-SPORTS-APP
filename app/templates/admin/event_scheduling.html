@@ -1,1 +1,71 @@
 {% extends "admin/base.html"%}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <script>
+      {% for category, message in messages %}
+        Swal.fire({
+          title: "{{ category.title() }}!",
+          text: "{{ message }}",
+          icon: "{{ category }}", // "success", "error", etc.
+          confirmButtonText: "OK"
+        });
+      {% endfor %}
+    </script>
+  {% endif %}
+{% endwith %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+  Add Event
+</button>
+<div class="modal fade" id="addEventModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Event</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{url_for('admin.add_event')}}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Event Name</label>
+            <input type="text" name="title" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Event Date</label>
+            <input type="date" name="date" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Event Time</label>
+            <input type="time" name="time" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Select Venue</label>
+            <select name="venue_id" class="form-select">
+              <option value="" selected disabled>Choose a venue...</option>
+              {% for venue in venues %}
+              <option value="{{ venue.id }}">{{ venue.location }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Select Sport</label>
+            <select name="sport_id" class="form-select">
+              <option value="" selected disabled>Choose a sport...</option>
+              {% for sport in sports %}
+              <option value="{{ sport.id }}">{{ sport.name }}</option>
+              {% endfor %}
+            </select>
+          </div>          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

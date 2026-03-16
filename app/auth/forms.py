@@ -50,7 +50,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("Please select at least one sport")
 
         if role == "coach" and len(selected_sports) != 1:
-            raise ValidationError( "Coach must select exactly 1 sport.")
+            raise ValidationError("Coach must select exactly 1 sport.")
 
         if role == "participant" and len(selected_sports) > 2:
             raise ValidationError("Participant can select maximum 2 sports.")

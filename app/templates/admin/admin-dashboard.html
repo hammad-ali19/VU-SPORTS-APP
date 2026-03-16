@@ -6,7 +6,15 @@
     <title>Admin</title>
 {% endblock title%}
 {% block content %}
-
+{%with messages = get_flashed_messages(with_categories=true)%}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{category}}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 <div class="row mb-4">
     <div class="col-6 col-md-3 mb-1">
         <div class="card">
@@ -35,7 +43,7 @@
 </div>
 
 <h5>All Users</h5>
-<input type="text" id="searchInput" placeholder="Search by name..." onkeyup="searchTable()">
+<input class="mb-2" type="text" id="searchInput" placeholder="Search by name..." onkeyup="searchTable()">
 <div class="table-responsive">
     <table class="table table-bordered" id="approvalTable">
         <thead>
@@ -48,7 +56,7 @@
         </thead>
         <tbody>
             {% if users %}
-                {% for user in users %}
+                {% for user in users[::-1] %}
                     <tr>
                         <td>{{user.name | capitalize}}</td>
                         <td>{{user.role.value | capitalize}}</td>
@@ -56,27 +64,31 @@
                             <span class="badge
                             {% if user.status.value == 'active' %} bg-success
                             {% elif user.status.value == 'pending' %} bg-warning
+                            {% elif user.status.value == 'blocked' %} bg-danger
                             {% endif %}">
                             {{user.status.value | upper}}
                             </span>
                         </td>
                         <td>
-                            {% if user.status.value == 'pending'%}
+                            {% if user.status.value == 'pending' or user.status.value == 'blocked'%}
                                 <form action="{{ url_for('admin.approve', user_id=user.id) }}" method="POST" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-primary btn-sm">
-                                        Approve {{ user.id }}
+                                        Approve
                                     </button>
                                 </form>
                                 <form action="{{ url_for('admin.reject_user', user_id=user.id) }}" method="POST" style="display:inline;">
                                     <button type="submit" class="btn btn-secondary btn-sm">
-                                        Reject {{ user.id }}
+                                        Reject
                                     </button>
                                 </form>
-                            {% else %}
-                                <button class="btn btn-outline-success btn-sm" disabled>
-                                    Approved
-                                </button>
+                            {% elif user.status.value == 'active' %}
+                                <form action="{{ url_for('admin.block_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Block
+                                    </button>
+                                </form>
                             {% endif %}
                         </td>
                     </tr>

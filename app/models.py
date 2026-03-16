@@ -1,7 +1,8 @@
 from keyword import kwlist
 
+from datetime import datetime
 from .extensions import db
-from sqlalchemy import UniqueConstraint, String, CheckConstraint, Enum, ForeignKey, Integer, Text, Boolean
+from sqlalchemy import UniqueConstraint, String, CheckConstraint, func, Enum, ForeignKey, DateTime, Integer, Text, Boolean, Date, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from flask_login import UserMixin
@@ -117,6 +118,8 @@ class Sport(db.Model):
         cascade='all, delete-orphan'
     )
 
+    events: Mapped[List['Event']] = relationship(back_populates='sport')
+
     def __repr__(self):
         return f"Id: {self.id} Name: {self.name} Max-Participants {self.max_participants}"
 
@@ -132,7 +135,7 @@ class ParticipantSport(db.Model):
         server_default='pending'
     )
     approved_by: Mapped[Optional[int]] = mapped_column(
-        ForeignKey('coaches.id'),
+        ForeignKey('coaches.id', ondelete='SET NULL'),
         nullable=True
     )
     participant_id: Mapped[int] = mapped_column(
@@ -150,4 +153,29 @@ class ParticipantSport(db.Model):
     __table_args__ = (
         db.UniqueConstraint('participant_id', 'sport_id', name='uq_participant_sport'),
     )
+
+class Venue(db.Model):
+    __tablename__ = 'venues'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    location: Mapped[str] = mapped_column(Text, nullable=False)
+    availability: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    events: Mapped[List['Event']] = relationship(back_populates='venue')
+
+class Event(db.Model):
+    __tablename__ = 'events'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    event_type: Mapped[Optional[str]] = mapped_column(Text)
+    date_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), unique=True)
+
+    sport_id: Mapped[int] = mapped_column(ForeignKey("sports.id", ondelete='SET NULL'), nullable=True)
+    # coach_id: Mapped[int] = mapped_column(ForeignKey("coaches.id", ondelete='SET NULL'))
+    venue_id: Mapped[int] = mapped_column(ForeignKey("venues.id", ondelete='SET NULL'), nullable=True)
+
+    sport: Mapped['Sport'] = relationship(back_populates='events')
+    venue: Mapped['Venue'] = relationship(back_populates='events')
+
 

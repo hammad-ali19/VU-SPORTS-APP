@@ -2,6 +2,7 @@ from flask import Flask, render_template, session
 
 from .extensions import csrf, db, login_manager, migrate
 from .models import User
+from .listeners import *
 
 
 def create_app():
@@ -27,11 +28,11 @@ def create_app():
 
     @app.route("/debug_session")
     def debug_session():
-        # Print the entire session dictionary to console
-        session.pop('coach-sport', None)
-        print(session)
+        # session.pop('coach-sport', None)
+        # session.pop('logged_in_at', None)
+        # print(session)
 
-        # Alternatively, return the items for viewing in the browser
+        # return the items for viewing in the browser
         return str(session.items())
 
     # Register Blueprints
