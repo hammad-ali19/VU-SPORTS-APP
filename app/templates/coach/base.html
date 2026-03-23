@@ -60,7 +60,11 @@
     <!-- Right Section -->
     <div class="d-flex align-items-center ms-auto">
         <span class="text-white me-3 d-none d-sm-inline">
-            Welcome, {{ current_user.name | capitalize }}
+            {% with name = current_user.name %}
+                {% set n = name.split()[0] %}
+                
+                Welcome, {{ n | capitalize }}
+            {% endwith %}
         </span>
         <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm">
             Logout

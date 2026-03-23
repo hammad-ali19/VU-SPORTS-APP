@@ -4,7 +4,7 @@ from .forms import RegistrationForm, LoginForm
 from .. import db
 from sqlalchemy import select
 from ..models import User, userRole, Participant, userStatus, ParticipantSport, Sport, Coach
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 # from werkzeug.security import generate_password_hash, check_password_hash
 
 @auth_bp.route("/")
@@ -13,8 +13,9 @@ def redirect_login():
 
 @auth_bp.route("/register", methods=['POST', 'GET'])
 def register():
+	# return f'Current user: {current_user.is_admin()}'
 	# if admin is registering user
-	from_admin = session.get("from_admin", False)
+	# from_admin = session.get("from_admin", False)
 	# print(f"before form submission: {from_admin}")
 	form = RegistrationForm()
 
@@ -50,9 +51,9 @@ def register():
 			db.session.commit()
 			# print("participant-sport added")
 			# print(f"after form submission: {from_admin}")
-			if from_admin:
-				session.pop("from_admin", None)
-				print(f"in auth after adding participant: {str(session.items())}")
+			if current_user.is_admin():
+				# session.pop("from_admin", None)
+				# print(f"in auth after adding participant: {str(session.items())}")
 				flash("Participant added successfully", category='success')
 				return redirect(url_for("admin.dashboard"))
 			flash("successfully Registered! You will be able to login after caoch approval.", category='info')
@@ -73,9 +74,9 @@ def register():
 				c_id = db.session.execute(select(Coach.id).where(Coach.user_id==user_id)).scalars().first()
 				sp.coach_id = c_id
 				db.session.commit()
-				if from_admin:
+				if current_user.is_admin():
 					session.pop("from_admin", None)
-					print(f"in auth after adding participant: {str(session.items())}")
+					# print(f"in auth after adding participant: {str(session.items())}")
 					flash("Coach added successfully", category='success')
 					return redirect(url_for("admin.dashboard"))
 				flash("Successfully registered you account! Please wait for admin approval before login ", category='info')
@@ -162,5 +163,5 @@ def logout():
 	logout_user()
 	# return render_template("login.html")
 	flash("You have logged out successfully", category='success')
-	session.pop('from_admin', None)
+	# session.pop('from_admin', None)
 	return redirect(url_for("auth.login"))

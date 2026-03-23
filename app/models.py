@@ -35,7 +35,7 @@ class User(db.Model, UserMixin):
     admin: Mapped["Admin"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role.value == 'admin'
 
     def is_coach(self):
         return self.role == 'coach'

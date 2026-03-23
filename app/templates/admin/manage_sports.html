@@ -1,4 +1,5 @@
-{% extends "admin/base.html"%}
+{#
+<!-- {% extends "admin/base.html"%}
 
 {% block title %} <title>Sports</title>{% endblock %}
 
@@ -13,5 +14,283 @@
             </div>
         {% endfor %}
     {% endif %}
+
+{% endblock %} -->
+#}
+
+
+
+
+
+
+
+
+
+
+{#
+{% extends "admin/base.html"%}
+
+{% block title %} <title>Sports</title>{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="mb-0">🏅 Sports</h4>
+        <small class="text-muted">{{ sports|length }} total sports</small>
+    </div>
+
+    <!-- Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+
+            {% if sports %}
+            <ul class="list-group list-group-flush">
+
+                {% for s in sports %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                    <!-- Sport Name -->
+                    <div class="fw-semibold">
+                        <i class="bi bi-trophy text-warning"></i>
+                        {{ s.name | capitalize }}
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        {% if s.coach_id %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-person-check"></i> Coach Assigned
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-person-x"></i> Not Assigned
+                        </span>
+                        {% endif %}
+                    </div>
+
+                </li>
+                {% endfor %}
+
+            </ul>
+            {% else %}
+            <div class="text-center p-5 text-muted">
+                <i class="bi bi-trophy" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0">No sports available</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+#}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% extends "admin/base.html"%}
+
+{% block title %} <title>Sports</title>{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0">🏅 Sports</h4>
+            <small class="text-muted">{{ sports|length }} total sports</small>
+        </div>
+
+        <!-- Add Sport Button -->
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSportModal">
+            <i class="bi bi-plus"></i> Add Sport
+        </button>
+    </div>
+
+    <!-- Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+
+            {% if sports %}
+            <ul class="list-group list-group-flush">
+
+                {% for s in sports %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                    <!-- Sport Info -->
+                    <div>
+                        <div class="fw-semibold">
+                            <i class="bi bi-trophy text-warning"></i>
+                            {{ s.name | capitalize }}
+                        </div>
+
+                        <!-- Coach Info -->
+                        <small class="text-muted">
+                            {% if s.coach %}
+                            Coach: {{ s.coach.user.name | capitalize }}
+                            {% else %}
+                            No coach assigned
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <!-- Right Side -->
+                    <div class="d-flex align-items-center gap-2">
+
+                        <!-- Status -->
+                        {% if s.coach_id %}
+                        <span class="badge bg-success">Assigned</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Not Assigned</span>
+                        {% endif %}
+
+                        <!-- Assign/Edit Coach -->
+                        <!-- <button class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#assignCoachModal{{ s.id }}">
+                                <i class="bi bi-person-gear"></i>
+                            </button> -->
+
+                    </div>
+
+                </li>
+
+                <!-- Assign Coach Modal -->
+                <div class="modal fade" id="assignCoachModal{{ s.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">Assign Coach - {{ s.name }}</h5>
+                                <button class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <form method="POST" action="#">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                <div class="modal-body">
+                                    <label class="form-label">Select Coach</label>
+                                    <select name="coach_id" class="form-select" required>
+                                        <option disabled selected>Choose coach...</option>
+
+                                        {% for coach in coaches %}
+                                        <option value="{{ coach.id }}">
+                                            {{ coach.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button class="btn btn-primary">Save</button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
+
+            </ul>
+            {% else %}
+            <div class="text-center p-5 text-muted">
+                <i class="bi bi-trophy" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0">No sports available</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= ADD SPORT MODAL ================= -->
+
+<div class="modal fade" id="addSportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">➕ Add Sport</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="POST" action="#">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="modal-body">
+                    <label class="form-label">Sport Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Enter sport name" required>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-success">Add Sport</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
 
 {% endblock %}

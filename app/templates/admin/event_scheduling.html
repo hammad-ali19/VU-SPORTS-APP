@@ -1,24 +1,80 @@
-{% extends "admin/base.html"%}
+{#
+<!-- {% extends "admin/base.html"%}
 
 {% block content %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  <script>
-      {% for category, message in messages %}
-        Swal.fire({
-          title: "{{ category.title() }}!",
-          text: "{{ message }}",
-          icon: "{{ category }}", // "success", "error", etc.
-          confirmButtonText: "OK"
-        });
-      {% endfor %}
-    </script>
-  {% endif %}
+{% if messages %}
+<script>
+  {% for category, message in messages %}
+  Swal.fire({
+    title: "{{ category.title() }}!",
+    text: "{{ message }}",
+    icon: "{{ category }}", // "success", "error", etc.
+    confirmButtonText: "OK",
+    confirmButtonColor: '#0D6EFD'
+  });
+  {% endfor %}
+</script>
+{% endif %}
 {% endwith %}
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEventModal">
   Add Event
 </button>
+<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addVenueModal">
+  Add Venue
+</button>
+
+<div class="table-responsive mt-3">
+  {% if events %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Venue</th>
+        <th>Sport</th>
+        <th>Scheduled at</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        {% for event in events %}
+        <tr>
+          <td>{{event.name | capitalize}}</td>
+          <td>
+            {% if event.venue %}
+              {{ event.venue.location }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>
+            {% if event.sport %}
+              {{ event.sport.name }}
+            {% else %}
+              N/A
+            {% endif %}        
+          </td>
+          <td>
+            {{ event.date_time}}
+          </td>
+          <td>
+            <form action="{{url_for('admin.delete_event', event_id=event.id)}}" method="post">
+              <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+              <button class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      
+    </tbody>
+  </table>
+  {% else %}
+    <p>No events exist yet</p>
+  {% endif %}
+</div>
+
 <div class="modal fade" id="addEventModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -31,11 +87,11 @@
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Event Name</label>
-            <input type="text" name="title" class="form-control">
+            <input type="text" name="name" class="form-control" placeholder="Enter event name"required>
           </div>
           <div class="mb-3">
             <label class="form-label">Event Date</label>
-            <input type="date" name="date" class="form-control">
+            <input type="date" name="date" class="form-control"required>
           </div>
           <div class="mb-3">
             <label class="form-label">Event Time</label>
@@ -43,7 +99,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Select Venue</label>
-            <select name="venue_id" class="form-select">
+            <select name="venue_id" class="form-select"required>
               <option value="" selected disabled>Choose a venue...</option>
               {% for venue in venues %}
               <option value="{{ venue.id }}">{{ venue.location }}</option>
@@ -52,13 +108,13 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Select Sport</label>
-            <select name="sport_id" class="form-select">
+            <select name="sport_id" class="form-select"required>
               <option value="" selected disabled>Choose a sport...</option>
               {% for sport in sports %}
               <option value="{{ sport.id }}">{{ sport.name }}</option>
               {% endfor %}
             </select>
-          </div>          
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -68,4 +124,265 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="addVenueModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Venue</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{url_for('admin.add_venue')}}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" placeholder="Enter venue name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Is Available ?</label>
+            <select name="availability" class="form-select" required>
+              <option value="" selected disabled>Yes or No...</option>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save Venue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} -->
+
+#}
+
+{% extends "admin/base.html"%}
+
+{% block content %}
+
+<!-- Alerts (SweetAlert stays same) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<script>
+  {% for category, message in messages %}
+  Swal.fire({
+    title: "{{ category.title() }}!",
+    text: "{{ message }}",
+    icon: "{{ category }}",
+    confirmButtonText: "OK",
+    confirmButtonColor: '#0D6EFD'
+  });
+  {% endfor %}
+</script>
+{% endif %}
+{% endwith %}
+
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0">📅 Event Scheduling</h4>
+      <small class="text-muted">{{ events|length }} total events</small>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEventModal">
+        <i class="bi bi-calendar-plus"></i> Add Event
+      </button>
+      <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addVenueModal">
+        <i class="bi bi-geo-alt"></i> Add Venue
+      </button>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-0">
+
+      {% if events %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+
+          <thead class="table-light">
+            <tr>
+              <th>Event</th>
+              <th>Venue</th>
+              <th>Sport</th>
+              <th>Date & Time</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for event in events %}
+            <tr>
+
+              <td class="fw-semibold">
+                {{ event.name | capitalize }}
+              </td>
+
+              <td>
+                {% if event.venue %}
+                  <i class="bi bi-geo-alt text-muted"></i>
+                  {{ event.venue.location }}
+                {% else %}
+                  <span class="text-muted">N/A</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if event.sport %}
+                  <span class="badge bg-info text-dark">
+                    {{ event.sport.name }}
+                  </span>
+                {% else %}
+                  <span class="text-muted">N/A</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <i class="bi bi-clock text-muted"></i>
+                {{ event.date_time }}
+              </td>
+
+              <td class="text-end">
+                <form action="{{url_for('admin.delete_event', event_id=event.id)}}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                  <button class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Delete this event?')">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+
+      {% else %}
+      <div class="text-center p-5 text-muted">
+        <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+        <p class="mt-2 mb-0">No events scheduled yet</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Add Event Modal -->
+<div class="modal fade" id="addEventModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-3">
+
+      <div class="modal-header">
+        <h5 class="modal-title">➕ Add New Event</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form action="{{url_for('admin.add_event')}}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Event Name</label>
+            <input type="text" name="name" class="form-control" placeholder="Enter event name" required>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label class="form-label">Date</label>
+              <input type="date" name="date" class="form-control" required>
+            </div>
+            <div class="col">
+              <label class="form-label">Time</label>
+              <input type="time" name="time" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label">Venue</label>
+            <select name="venue_id" class="form-select" required>
+              <option disabled selected>Choose venue...</option>
+              {% for venue in venues %}
+              <option value="{{ venue.id }}">{{ venue.location }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label">Sport</label>
+            <select name="sport_id" class="form-select" required>
+              <option disabled selected>Choose sport...</option>
+              {% for sport in sports %}
+              <option value="{{ sport.id }}">{{ sport.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary">Save Event</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Venue Modal -->
+<div class="modal fade" id="addVenueModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-3">
+
+      <div class="modal-header">
+        <h5 class="modal-title">📍 Add Venue</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form action="{{url_for('admin.add_venue')}}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Venue Name</label>
+            <input type="text" name="name" class="form-control" placeholder="Enter venue name" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Availability</label>
+            <select name="availability" class="form-select" required>
+              <option disabled selected>Select...</option>
+              <option value="1">Available</option>
+              <option value="0">Not Available</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary">Save Venue</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

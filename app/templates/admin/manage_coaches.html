@@ -1,4 +1,5 @@
-{% extends "admin/base.html"%}
+{#
+<!-- {% extends "admin/base.html"%}
 
 {% block title %} <title>Coaches</title>{% endblock %}
 
@@ -18,11 +19,105 @@
                 </p>
                 <form action="{{url_for('admin.delete_user', u_id=c.id)}}" method="post">
                     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                    <button class="btn btn-sm btn-danger">Delete</button>
+                    <button class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete {{c.name}}\'s account?')">Delete</button>
                 </form>
             </div>
             <!-- <div>{{ c.name | capitalize }} | {{ c.email }} | {{ c.coach.sport.name }}</div> -->
         {% endfor %}
     {% endif %}
+
+{% endblock %} -->
+#}
+
+
+{% extends "admin/base.html"%}
+
+{% block title %} <title>Coaches</title>{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0">🏅 Coaches</h4>
+            <small class="text-muted">{{ coaches|length }} total coaches</small>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.add_user') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="from_admin" value="1">
+            <button class="btn btn-success">
+                <i class="bi bi-person-plus"></i> Add Coach
+            </button>
+        </form>
+    </div>
+
+    <!-- Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+
+            {% if coaches %}
+                <ul class="list-group list-group-flush">
+
+                    {% for c in coaches[::-1] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                        <!-- Coach Info -->
+                        <div>
+                            <div class="fw-semibold">
+                                {{ c.name | capitalize }}
+                            </div>
+                            
+                            <small class="text-muted d-block">
+                                <i class="bi bi-envelope"></i> {{ c.email }}
+                            </small>
+
+                            <small class="text-muted">
+                                <i class="bi bi-trophy"></i> {{ c.coach.sport.name }}
+                            </small>
+                        </div>
+
+                        <!-- Status + Actions -->
+                        <div class="d-flex align-items-center gap-3">
+
+                            <!-- Status Badge -->
+                            {% if c.status.value == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                            {% elif c.status.value == 'inactive' %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    {{ c.status.value | capitalize }}
+                                </span>
+                            {% endif %}
+
+                            <!-- Delete -->
+                            <form action="{{url_for('admin.delete_user', u_id=c.id)}}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                <button class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete {{c.name}}\'s account?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </li>
+                    {% endfor %}
+
+                </ul>
+            {% else %}
+                <div class="text-center p-4 text-muted">
+                    <i class="bi bi-person-badge" style="font-size: 2rem;"></i>
+                    <p class="mt-2 mb-0">No coaches available</p>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
 
 {% endblock %}
