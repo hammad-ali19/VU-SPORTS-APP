@@ -228,20 +228,20 @@
 
               <td>
                 {% if event.venue %}
-                  <i class="bi bi-geo-alt text-muted"></i>
-                  {{ event.venue.location }}
+                <i class="bi bi-geo-alt text-muted"></i>
+                {{ event.venue.location }}
                 {% else %}
-                  <span class="text-muted">N/A</span>
+                <span class="text-muted">N/A</span>
                 {% endif %}
               </td>
 
               <td>
                 {% if event.sport %}
-                  <span class="badge bg-info text-dark">
-                    {{ event.sport.name }}
-                  </span>
+                <span class="badge bg-info text-dark">
+                  {{ event.sport.name }}
+                </span>
                 {% else %}
-                  <span class="text-muted">N/A</span>
+                <span class="text-muted">N/A</span>
                 {% endif %}
               </td>
 
@@ -253,8 +253,7 @@
               <td class="text-end">
                 <form action="{{url_for('admin.delete_event', event_id=event.id)}}" method="post">
                   <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                  <button class="btn btn-sm btn-outline-danger"
-                    onclick="return confirm('Delete this event?')">
+                  <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this event?')">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>

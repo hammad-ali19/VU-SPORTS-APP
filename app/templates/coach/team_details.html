@@ -1,0 +1,41 @@
+{% extends 'coach/base.html' %}
+
+{% block title %}<title>Team Details</title>{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ team.name }} ({{ team.members|length }}/{{ team.max_participants }} members)</h2>
+    <a href="{{ url_for('coach.teams') }}" class="btn btn-secondary mb-3">Back to Teams</a>
+
+    <h4>Current Members</h4>
+    <ul class="list-group mb-4">
+        {% for member in team.members %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ member.participant.user.name }}
+            <form method="POST" action="{{ url_for('coach.remove_from_team', team_id=team.id, participant_id=member.participant.id) }}" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if available_participants %}
+    <h4>Add Participants</h4>
+    <form method="POST" action="{{ url_for('coach.add_to_team', team_id=team.id) }}">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+        <div class="mb-3">
+            <select class="form-select" name="participant_id" required>
+                <option value="">Select a participant</option>
+                {% for p in available_participants %}
+                <option value="{{ p.id }}">{{ p.user.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Add to Team</button>
+    </form>
+    {% else %}
+    <p>No available participants to add.</p>
+    {% endif %}
+</div>
+{% endblock %}

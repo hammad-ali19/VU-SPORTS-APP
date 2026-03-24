@@ -73,15 +73,7 @@
 
 </nav>
 
-{%with messages = get_flashed_messages(with_categories=true)%}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{category}}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+
 
 <div class="container-fluid">
     <div class="row">
@@ -113,11 +105,30 @@
                         Manage Participants
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link 
+                    {% if request.endpoint == 'coach.teams' or request.endpoint == 'coach.create_team' or request.endpoint == 'coach.team_details' %}active{% endif %}"
+                    href="{{ url_for('coach.teams') }}">
+                        Teams
+                    </a>
+                </li>
             </ul>
         </div>
 
         <!-- Content -->
         <div class="col-12 col-md-10 content-area">
+            {% block message %}
+            {%with messages = get_flashed_messages(with_categories=true)%}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{category}}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% endblock %}
             {% block content %}{% endblock %}
         </div>
 

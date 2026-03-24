@@ -72,6 +72,7 @@ class Participant(db.Model, UserMixin):
         back_populates='participant',
         cascade='all, delete-orphan'
     )
+    teams: Mapped[List['TeamParticipant']] = relationship(back_populates='participant')
 
 
 class Coach(db.Model, UserMixin):
@@ -86,6 +87,7 @@ class Coach(db.Model, UserMixin):
 
     user: Mapped["User"] = relationship(back_populates="coach")
     sport: Mapped['Sport'] = relationship(back_populates='coach', uselist=False)
+    teams: Mapped[List['Team']] = relationship(back_populates='coach')
 
     def is_available(self):
         return self.availability
@@ -119,6 +121,7 @@ class Sport(db.Model):
     )
 
     events: Mapped[List['Event']] = relationship(back_populates='sport')
+    teams: Mapped[List['Team']] = relationship(back_populates='sport')
 
     def __repr__(self):
         return f"Id: {self.id} Name: {self.name} Max-Participants {self.max_participants}"
@@ -177,5 +180,36 @@ class Event(db.Model):
 
     sport: Mapped['Sport'] = relationship(back_populates='events')
     venue: Mapped['Venue'] = relationship(back_populates='events')
+
+class Team(db.Model):
+    __tablename__ = 'teams'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    max_participants: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+
+    sport_id: Mapped[int] = mapped_column(ForeignKey("sports.id", ondelete='CASCADE'), nullable=False)
+    coach_id: Mapped[int] = mapped_column(ForeignKey("coaches.id", ondelete='CASCADE'), nullable=False)
+
+    sport: Mapped['Sport'] = relationship(back_populates='teams')
+    coach: Mapped['Coach'] = relationship(back_populates='teams')
+    members: Mapped[List['TeamParticipant']] = relationship(back_populates='team', cascade='all, delete-orphan')
+
+class TeamParticipant(db.Model):
+    __tablename__ = 'team_participants'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    joined_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id", ondelete='CASCADE'), nullable=False)
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id", ondelete='CASCADE'), nullable=False)
+
+    team: Mapped['Team'] = relationship(back_populates='members')
+    participant: Mapped['Participant'] = relationship(back_populates='teams')
+
+    __table_args__ = (
+        db.UniqueConstraint('team_id', 'participant_id', name='uq_team_participant'),
+    )
 
 

@@ -13,10 +13,10 @@ class MultiCheckboxField(SelectMultipleField):
 
 
 class RegistrationForm(FlaskForm):
-    name = StringField("Name: ", validators=[DataRequired(message='Name is required.'), Length(min=3), Regexp(r'^[A-Za-z ]+$', message='Name must contain only letters')])
-    email = EmailField("Email: ", validators=[DataRequired(message='Email is required.'), Email()])
-    password = PasswordField("Password: ", validators=[Length(min=6, message='Password must be at least 6 characters long.')])
-    confirm_password = PasswordField("Confirm Password: ", validators=[Length(min=6, message='Password must be at least 6 characters long.'), EqualTo('password', message='Passwords do not match.')])
+    name = StringField("Name: ", validators=[DataRequired(message='Name is required.'), Length(min=3), Regexp(r'^[A-Za-z ]+$', message='Name must contain only letters')], render_kw={'placeholder': "Enter your name"})
+    email = EmailField("Email: ", validators=[DataRequired(message='Email is required.'), Email()], render_kw={'placeholder': "Enter your email"})
+    password = PasswordField("Password: ", validators=[Length(min=6, message='Password must be at least 6 characters long.')], render_kw={'placeholder': "Enter your password"})
+    confirm_password = PasswordField("Confirm Password: ", validators=[Length(min=6, message='Password must be at least 6 characters long.'), EqualTo('password', message='Passwords do not match.')], render_kw={'placeholder': "Confirm password"})
     choices = [("", "Select a role"),("participant", "Participant"), ("coach", "Coach")]
     role = SelectField("Role: ", choices=choices, default="", validators=[DataRequired(message='Select your role.')])
 
