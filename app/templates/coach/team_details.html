@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-    <h2>{{ team.name }} ({{ team.members|length }}/{{ team.max_participants }} members)</h2>
+    <h2>{{ team.name | upper }} ({{ team.members|length }}/{{ team.max_participants }} members)</h2>
     <a href="{{ url_for('coach.teams') }}" class="btn btn-secondary mb-3">Back to Teams</a>
 
     <h4>Current Members</h4>
