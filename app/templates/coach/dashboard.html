@@ -38,6 +38,10 @@
                                 </form>
                                 {% else %}
                                 <button disabled>Approved</button>
+                                <form action="{{url_for('coach.disable', ps_id=ps.id)}}" method="POST" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                    <button type="submit">Disable</button>
+                                </form>                                
                                 {% endif %}
                             </td>
                         </tr>

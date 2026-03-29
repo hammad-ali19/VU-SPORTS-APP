@@ -1,0 +1,13 @@
+{% extends "participant/base.html" %}
+
+
+{% block content %}
+<h6>Players in {{team.name}}</h6>
+{% if team %}
+<ul>
+  {% for member in team.members%}
+  <li>{{member.participant.user.name}}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

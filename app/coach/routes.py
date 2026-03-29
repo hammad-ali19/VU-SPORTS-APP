@@ -54,6 +54,7 @@ def approve(ps_id):
 def teams():
     sport = db.session.execute(select(Sport).where(current_user.coach.id == Sport.coach_id)).scalars().first()
     teams = db.session.execute(select(Team).where(Team.sport_id == sport.id)).scalars().all()
+    print(teams)
     return render_template("coach/teams.html", teams=teams, sport=sport)
 
 @c_bp.route("/create-team", methods=['GET', 'POST'])
@@ -75,16 +76,32 @@ def create_team():
             flash("Please fill all fields.", "error")
     return render_template("coach/create_team.html", sport=sport)
 
-@c_bp.route("/team/<int:team_id>")
+@c_bp.route("/team-details/<int:team_id>")
 @login_required
 @required_role(userRole.COACH)
 def team_details(team_id):
+    print(team_id)
     team = db.session.get(Team, team_id)
+    teams = team.coach.sport.teams
+    print(teams)
     if not team or team.coach_id != current_user.coach.id:
         return "Unauthorized", 403
     # Get approved participants for the sport
+    already_joined = []
+    for t in teams:
+        for member in t.members:
+            already_joined.append(member.participant)
+    # print(already_joined)
+
     approved_ps = db.session.execute(select(ParticipantSport).where(ParticipantSport.sport_id == team.sport_id, ParticipantSport.status == 'active')).scalars().all()
-    available_participants = [ps.participant for ps in approved_ps if not any(tp.participant_id == ps.participant_id for tp in team.members)]
+    # available_participants = [ps.participant for ps in approved_ps if not any(tp.participant_id == ps.participant_id for tp in team.members)]
+    # available_participants = [ps.participant for ps in approved_ps if not any(aj.id == ps.participant.id for aj in already_joined)]
+
+    available_participants = []
+    for ps in approved_ps:
+        if ps.participant not in already_joined:
+            available_participants.append(ps.participant)
+    
     return render_template("coach/team_details.html", team=team, available_participants=available_participants)
 
 @c_bp.route("/add-to-team/<int:team_id>", methods=['POST'])
@@ -131,3 +148,14 @@ def remove_from_team(team_id, participant_id):
         db.session.commit()
         flash("Participant removed from team.", "success")
     return redirect(url_for("coach.team_details", team_id=team_id))
+
+
+@c_bp.route("/disable-participant/<int:ps_id>", methods=['POST'])
+@login_required
+@required_role(userRole.COACH)
+def disable(ps_id):
+    ps = db.session.get(ParticipantSport, ps_id)
+    ps.status = 'pending'
+    db.session.commit()
+    return redirect(url_for('coach.dashboard'))
+

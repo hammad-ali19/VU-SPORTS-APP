@@ -28,4 +28,20 @@
         </li>
         {% endfor %}
     </ul>
+    <h6>Your teams: </h6>
+    {% if current_user.participant.teams %}
+    <ul>
+        {% for tp in current_user.participant.teams %}
+            <li class="mb-1">{{tp.team.name}} - {{ tp.team.sport.name }} - 
+                <form method="post" action="{{url_for('participant.team_members', team_id=tp.team.id)}}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                    <button>View Team Members</button>
+
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- <div>{{ current_user.participant.teams }}</div> -->
 {% endblock %}

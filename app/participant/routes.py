@@ -1,8 +1,8 @@
 from flask import redirect, render_template, url_for
 from flask_login import current_user, login_required
-
+from .. import db
 from ..decorators import required_role
-from ..models import userRole
+from ..models import *
 from . import p_bp
 
 
@@ -24,3 +24,10 @@ def dashboard():
 @required_role(userRole.PARTICIPANT)
 def manage_profile():
     return render_template("participant/my_profile.html")
+
+@p_bp.route("/team-members/<int:team_id>", methods=['POST'])
+def team_members(team_id):
+    team = db.session.get(Team, team_id)
+    print(team.members)
+    return render_template('participant/team_members.html', team=team)
+                

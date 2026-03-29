@@ -74,6 +74,9 @@ class Participant(db.Model, UserMixin):
     )
     teams: Mapped[List['TeamParticipant']] = relationship(back_populates='participant')
 
+    def __repr__(self):
+        return f"<Id: {self.id}, Name: {self.user.name}>"
+
 
 class Coach(db.Model, UserMixin):
 
@@ -156,6 +159,8 @@ class ParticipantSport(db.Model):
     __table_args__ = (
         db.UniqueConstraint('participant_id', 'sport_id', name='uq_participant_sport'),
     )
+    def __repr__(self):
+        return f"<ParticipantName: {self.participant.name}, SportName: {self.sport.name}>"
 
 class Venue(db.Model):
     __tablename__ = 'venues'
@@ -195,6 +200,9 @@ class Team(db.Model):
     sport: Mapped['Sport'] = relationship(back_populates='teams')
     coach: Mapped['Coach'] = relationship(back_populates='teams')
     members: Mapped[List['TeamParticipant']] = relationship(back_populates='team', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<ID: {self.id}, Team Name: {self.name}, Members: {len(self.members)}>"
 
 class TeamParticipant(db.Model):
     __tablename__ = 'team_participants'
