@@ -73,7 +73,7 @@ def create_team():
             flash("Team created successfully!", "success")
             return redirect(url_for("coach.teams"))
         else:
-            flash("Please fill all fields.", "error")
+            flash("Please fill all fields.", "danger")
     return render_template("coach/create_team.html", sport=sport)
 
 @c_bp.route("/team-details/<int:team_id>")
@@ -113,21 +113,21 @@ def add_to_team(team_id):
         return "Unauthorized", 403
     participant_id = request.form.get('participant_id')
     if not participant_id:
-        flash("Please select a participant.", "error")
+        flash("Please select a participant.", "danger")
         return redirect(url_for("coach.team_details", team_id=team_id))
     participant_id = int(participant_id)
     if len(team.members) >= team.max_participants:
-        flash("Team is full.", "error")
+        flash("Team is full.", "danger")
         return redirect(url_for("coach.team_details", team_id=team_id))
     # Check if participant is approved for the sport
     ps = db.session.execute(select(ParticipantSport).where(ParticipantSport.participant_id == participant_id, ParticipantSport.sport_id == team.sport_id, ParticipantSport.status == 'active')).scalars().first()
     if not ps:
-        flash("Participant not approved for this sport.", "error")
+        flash("Participant not approved for this sport.", "danger")
         return redirect(url_for("coach.team_details", team_id=team_id))
     # Check if already in team
     existing = db.session.execute(select(TeamParticipant).where(TeamParticipant.team_id == team_id, TeamParticipant.participant_id == participant_id)).scalars().first()
     if existing:
-        flash("Participant already in team.", "error")
+        flash("Participant already in team.", "danger")
         return redirect(url_for("coach.team_details", team_id=team_id))
     tp = TeamParticipant(team_id=team_id, participant_id=participant_id)
     db.session.add(tp)

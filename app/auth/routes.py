@@ -51,7 +51,7 @@ def register():
 			db.session.commit()
 			# print("participant-sport added")
 			# print(f"after form submission: {from_admin}")
-			if current_user.is_admin():
+			if current_user.is_authenticated and current_user.is_admin():
 				# session.pop("from_admin", None)
 				# print(f"in auth after adding participant: {str(session.items())}")
 				flash("Participant added successfully", category='success')
@@ -74,7 +74,7 @@ def register():
 				c_id = db.session.execute(select(Coach.id).where(Coach.user_id==user_id)).scalars().first()
 				sp.coach_id = c_id
 				db.session.commit()
-				if current_user.is_admin():
+				if current_user.is_authenticated and current_user.is_admin():
 					session.pop("from_admin", None)
 					# print(f"in auth after adding participant: {str(session.items())}")
 					flash("Coach added successfully", category='success')

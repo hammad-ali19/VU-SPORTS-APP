@@ -25,7 +25,7 @@
     <form method="POST" action="{{ url_for('coach.add_to_team', team_id=team.id) }}">
     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
         <div class="mb-3">
-            <select class="form-select" name="participant_id" required>
+            <select class="form-select" name="participant_id">
                 <option value="">Select a participant</option>
                 {% for p in available_participants %}
                 <option value="{{ p.id }}">{{ p.user.name | capitalize }}</option>
