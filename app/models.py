@@ -72,7 +72,7 @@ class Participant(db.Model, UserMixin):
         back_populates='participant',
         cascade='all, delete-orphan'
     )
-    teams: Mapped[List['TeamParticipant']] = relationship(back_populates='participant')
+    teams: Mapped[List['TeamParticipant']] = relationship(back_populates='participant',cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<Id: {self.id}, Name: {self.user.name}>"
