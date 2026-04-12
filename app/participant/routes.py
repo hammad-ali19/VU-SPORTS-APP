@@ -1,5 +1,6 @@
-from flask import redirect, render_template, url_for
+from flask import redirect, render_template, url_for, request, flash
 from flask_login import current_user, login_required
+from sqlalchemy import select
 from .. import db
 from ..decorators import required_role
 from ..models import *
@@ -30,4 +31,74 @@ def team_members(team_id):
     team = db.session.get(Team, team_id)
     print(team.members)
     return render_template('participant/team_members.html', team=team)
-                
+
+@p_bp.route("/scheduled-events", methods=['GET'])
+def scheduled_events():
+    from datetime import datetime
+    from sqlalchemy import select
+
+    # 1. Get the current time
+    now = datetime.now()
+
+    # 2. Build the query
+    stmt = select(Event).where(Event.date_time >= now).order_by(Event.date_time.asc())
+
+    # 3. Execute (assuming 'db.session' if using Flask-SQLAlchemy)
+    upcoming_events = db.session.scalars(stmt).all()
+    # print(upcoming_events)
+
+
+
+    participant_sports = current_user.participant.sports
+    sports = []
+    for ps in participant_sports:
+        sports.append(ps.sport)
+    events = []
+    for s in sports:
+        events.append(s.events)
+    # print(sports)
+    # print(events)
+    all_events = []
+    for event_array in events:
+        for event in event_array:
+            if event.date_time >= datetime.now():
+                all_events.append(event)
+    registered_events = []
+    for er in current_user.participant.events:
+        if er.event.date_time >= datetime.now():
+            registered_events.append(er.event)
+    print(registered_events)
+    # print(type(sports[0]))
+    # print((all_events))
+    
+    return render_template("participant/scheduled_events.html", events=all_events, registered_events=registered_events)
+#     return {
+#     "sports": [{"id": s.id, "name": s.name} for s in sports],
+#     "events": [{"id": e.id, "name": e.name} for e in all_events]
+# }
+
+@p_bp.route("scheduled-events/register-for-event/<int:event_id>/<int:sport_id>", methods=['POST', 'GET'])
+def register_for_event(event_id, sport_id):
+    event_id = int(request.form.get('event_id'))
+    print(f"this is {current_user.participant.events}")
+    event = db.session.get(Event, event_id)
+    par_reg_events = current_user.participant.events
+    if not par_reg_events:
+        event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
+        db.session.add(event_reg)
+        db.session.commit()
+        flash(f"you have been registerd for event: {event.name}", category="success")
+        return redirect(url_for("participant.scheduled_events"))
+    else:
+        for pre in par_reg_events:
+            if pre.event_id == event_id:
+                print(pre.event_id, event_id)
+                flash('you are already registered for this event', category="info")
+                return redirect(url_for("participant.scheduled_events"))
+        
+        print(pre.event_id, event_id)
+        event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
+        db.session.add(event_reg)
+        db.session.commit()
+        flash(f"you have been registerd for event: {event.name}", category="success")
+        return redirect(url_for("participant.scheduled_events"))

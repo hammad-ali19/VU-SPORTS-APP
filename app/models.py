@@ -73,6 +73,7 @@ class Participant(db.Model, UserMixin):
         cascade='all, delete-orphan'
     )
     teams: Mapped[List['TeamParticipant']] = relationship(back_populates='participant',cascade='all, delete-orphan')
+    events: Mapped[List['EventRegistration']] = relationship(back_populates='participant', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<Id: {self.id}, Name: {self.user.name}>"
@@ -160,7 +161,7 @@ class ParticipantSport(db.Model):
         db.UniqueConstraint('participant_id', 'sport_id', name='uq_participant_sport'),
     )
     def __repr__(self):
-        return f"<ParticipantName: {self.participant.name}, SportName: {self.sport.name}>"
+        return f"<ParticipantName: {self.participant.user.name}, SportName: {self.sport.name}>"
 
 class Venue(db.Model):
     __tablename__ = 'venues'
@@ -185,6 +186,10 @@ class Event(db.Model):
 
     sport: Mapped['Sport'] = relationship(back_populates='events')
     venue: Mapped['Venue'] = relationship(back_populates='events')
+    event_participants: Mapped[List['EventRegistration']] = relationship(back_populates='event', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<{self.name}, {self.venue.location}, {self.date_time}>"
 
 class Team(db.Model):
     __tablename__ = 'teams'
@@ -220,4 +225,17 @@ class TeamParticipant(db.Model):
         db.UniqueConstraint('team_id', 'participant_id', name='uq_team_participant'),
     )
 
+class EventRegistration(db.Model):
+    __tablename__ = 'event_registrations'
 
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id", ondelete='CASCADE'), nullable=False)
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete='CASCADE'), nullable=False)
+
+    event: Mapped['Event'] = relationship(back_populates='event_participants')
+    participant: Mapped['Participant'] = relationship(back_populates='events')
+
+    __table_args__ = (
+        db.UniqueConstraint('event_id', 'participant_id', name='uq_event_registration'),
+    )

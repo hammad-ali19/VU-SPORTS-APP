@@ -4,6 +4,7 @@
     {% block title %}<title>VU Sports Society</title>{% endblock title %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"> -->
     <style>
@@ -97,12 +98,30 @@
                         My Profile
                     </a>
                 </li>
-
+                
+                <li class="nav-item">
+                    <a class="nav-link 
+                    {% if request.endpoint == 'participant.scheduled_events' %}active{% endif %}"
+                    href="{{ url_for('participant.scheduled_events') }}">
+                        Scheduled Events
+                    </a>
+                </li>
             </ul>
         </div>
 
         <!-- Content -->
         <div class="col-12 col-md-10 content-area">
+            {% block message %}
+            {%with messages = get_flashed_messages(with_categories=true)%}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{category}}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% endblock %}            
             {% block content %}{% endblock %}
         </div>
 
