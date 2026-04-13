@@ -20,10 +20,35 @@ def dashboard():
     return render_template("participant/dashboard.html", sports=ps)
 
 
-@p_bp.route("/my-profile")
+@p_bp.route("/my-profile", methods=['POST', 'GET'])
 @login_required
 @required_role(userRole.PARTICIPANT)
 def manage_profile():
+    if request.method == 'POST':
+        user = current_user
+        participant = user.participant
+
+        # Always update name (required field)
+        user.name = request.form.get('name')
+
+        # Optional fields (only update if not empty)
+        university_id = request.form.get('university_id')
+        if university_id:
+            participant.university_id = university_id
+
+        achievements = request.form.get('achievements')
+        if achievements and achievements.strip():
+            participant.achievements = achievements
+
+        past_participation = request.form.get('past_participation')
+        if past_participation and past_participation.strip():
+            participant.past_participation = past_participation
+
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+
+        return redirect(url_for('participant.manage_profile'))
+
     return render_template("participant/my_profile.html")
 
 @p_bp.route("/team-members/<int:team_id>", methods=['POST'])

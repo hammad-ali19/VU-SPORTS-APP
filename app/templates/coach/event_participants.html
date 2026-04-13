@@ -1,0 +1,116 @@
+{% extends "coach/base.html" %}
+
+{% block title %}<title>Event Participants</title>{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="mb-1">👥 {{ event.name }}</h4>
+      <p class="text-muted mb-0">
+        {{ event.event_participants | length }} Participants
+      </p>
+    </div>
+  </div>
+
+  <!-- Participants List -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Registered Participants</h5>
+
+      {% if event.event_participants %}
+      <ul class="list-group list-group-flush">
+        {% for ep in event.event_participants %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+
+          <div>
+            <strong>{{ ep.participant.user.name }}</strong><br>
+            <small class="text-muted">
+              {{ ep.participant.university_id or "No ID" }}
+            </small>
+          </div>
+
+          <button class="btn btn-sm btn-outline-primary view-profile-btn"
+            data-name="{{ ep.participant.user.name }}"
+            data-email="{{ ep.participant.user.email }}"
+            data-university="{{ ep.participant.university_id or 'N/A' }}"
+            data-achievements="{{ ep.participant.achievements or 'No achievements listed' }}"
+            data-sports="{% for s in ep.participant.sports %}
+                            {{ s.sport.name }}{% if not loop.last %}, {% endif %}
+                          {% endfor %}">
+            View Profile
+          </button>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted mb-0">No participants registered.</p>
+      {% endif %}
+    </div>
+  </div>
+  <!-- Profile Modal -->
+  <div class="modal fade" id="profileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Participant Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <h5 id="modalName"></h5>
+          <p class="text-muted mb-2" id="modalEmail"></p>
+
+          <hr>
+
+          <p><strong>University ID:</strong> <span id="modalUniversity"></span></p>
+
+          <p><strong>Sports Enrolled:</strong>
+            <span id="modalSports"></span>
+          </p>
+
+          <p><strong>Achievements:</strong><br>
+            <span id="modalAchievements"></span>
+          </p>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+    const buttons = document.querySelectorAll(".view-profile-btn");
+
+    buttons.forEach(button => {
+      button.addEventListener("click", function () {
+
+        document.getElementById("modalName").innerText = this.dataset.name;
+        document.getElementById("modalEmail").innerText = this.dataset.email;
+        document.getElementById("modalUniversity").innerText = this.dataset.university;
+        let sports = this.dataset.sports.replaceAll(' ', '')
+        sports = sports.replaceAll('\n', '')
+        document.getElementById("modalSports").innerText = sports || "None";
+        document.getElementById("modalAchievements").innerText = this.dataset.achievements;
+
+        const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+        modal.show();
+      });
+    });
+
+  });
+</script>
+{% endblock %}

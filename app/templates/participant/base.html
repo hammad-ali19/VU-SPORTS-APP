@@ -85,7 +85,7 @@
 
                 <li class="nav-item">
                     <a class="nav-link 
-                    {% if request.endpoint == 'participant.dashboard' %}active{% endif %}"
+                    {% if request.endpoint == 'participant.dashboard' or request.endpoint == 'participant.team_members'%}active{% endif %}"
                     href="{{ url_for('participant.dashboard') }}">
                         Dashboard
                     </a>

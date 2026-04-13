@@ -1,4 +1,4 @@
-{% extends "participant/base.html" %}
+{# <!-- {% extends "participant/base.html" %}
 
 
 {% block content %}
@@ -10,4 +10,61 @@
   {% endfor %}
 </ul>
 {% endif %}
+  {% endblock %} --> #}
+
+
+
+  {% extends "participant/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Team Header -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-1">👥 {{ team.name }}</h4>
+            <p class="text-muted mb-0">
+                {{ team.sport.name }} • {{ team.members | length }} Members
+            </p>
+        </div>
+    </div>
+
+    <!-- Members List -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Team Members</h5>
+
+            {% if team and team.members %}
+                <ul class="list-group list-group-flush">
+                    {% for member in team.members %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                            <!-- Member Info -->
+                            <div>
+                                <strong>{{ member.participant.user.name }}</strong><br>
+                                <small class="text-muted">Team Player</small>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    View Profile
+                                </button>
+
+                                <!-- Message button (you can hook this later) -->
+                                <button class="btn btn-sm btn-primary">
+                                    💬 Message
+                                </button>
+                            </div>
+
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No members found in this team.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
 {% endblock %}

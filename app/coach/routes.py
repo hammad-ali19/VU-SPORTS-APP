@@ -22,11 +22,34 @@ def dashboard():
 	return render_template("coach/dashboard.html", sport=sport, participants=sport.participants)
 
 
-@c_bp.route("/my-profile")
+@c_bp.route("/my-profile", methods=['POST', 'GET'])
 @login_required
 @required_role(userRole.COACH)
 def my_profile():
-	return render_template("coach/my_profile.html")
+    if request.method == 'POST':
+        user = current_user
+        coach = user.coach
+
+        # Always update name
+        user.name = request.form.get('name')
+
+        # Availability (always update since it's controlled input)
+        availability = request.form.get('availability')
+        if availability == 'true':
+            coach.availability = True
+        else:
+            coach.availability = False
+
+        # Expertise (only update if not empty)
+        expertise = request.form.get('expertise')
+        if expertise and expertise.strip():
+            coach.expertise = expertise
+
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+
+        return redirect(url_for('coach.my_profile'))
+    return render_template("coach/my_profile.html")
 
 @c_bp.route("/manage-participants")
 @login_required
@@ -159,3 +182,16 @@ def disable(ps_id):
     db.session.commit()
     return redirect(url_for('coach.dashboard'))
 
+@c_bp.route("/events")
+def events():
+    coach = current_user.coach
+    events = coach.sport.events
+    return render_template("coach/events.html", events=events)
+
+
+@c_bp.route('/event/<int:event_id>/participants')
+@login_required
+def event_participants(event_id):
+    event = db.get_or_404(Event, event_id)
+    # event = Event.query.get_or_404(event_id)
+    return render_template('coach/event_participants.html', event=event)

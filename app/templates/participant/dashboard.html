@@ -1,4 +1,4 @@
-{% extends 'participant/base.html' %}
+{# <!-- {% extends 'participant/base.html' %}
 
 {% block title %}<title>Dashboard</title>{% endblock %}
 
@@ -33,6 +33,84 @@
         {% endfor %}
     </ul>
     {% endif %}
+{% endblock %} --> #}
 
-    <!-- <div>{{ current_user.participant.teams }}</div> -->
+
+{% extends 'participant/base.html' %}
+
+{% block title %}<title>Dashboard</title>{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Registered Sports -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">🏅 Your Registered Sports</h5>
+
+            {% if sports %}
+                <ul class="list-group list-group-flush">
+                    {% for sport in sports %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            
+                            <div>
+                                <strong>{{ sport.sport.name }}</strong><br>
+                                <small class="text-muted">
+                                    {% if sport.status == 'active' %}
+                                        You can participate in activities for this sport.
+                                    {% else %}
+                                        Awaiting coach approval before participation.
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            <span class="badge 
+                                {% if sport.status == 'active' %} bg-success 
+                                {% elif sport.status == 'pending' %} bg-warning text-dark 
+                                {% else %} bg-secondary 
+                                {% endif %}">
+                                {{ sport.status | capitalize }}
+                            </span>
+
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">You are not registered in any sports yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Teams -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">👥 Your Teams</h5>
+
+            {% if current_user.participant.teams %}
+                <ul class="list-group list-group-flush">
+                    {% for tp in current_user.participant.teams %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                            <div>
+                                <strong>{{ tp.team.name }}</strong><br>
+                                <small class="text-muted">{{ tp.team.sport.name }}</small>
+                            </div>
+
+                            <form method="post" action="{{ url_for('participant.team_members', team_id=tp.team.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    View Members
+                                </button>
+                            </form>
+
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">You are not part of any team yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
 {% endblock %}
