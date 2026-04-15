@@ -108,12 +108,19 @@ def register_for_event(event_id, sport_id):
     print(f"this is {current_user.participant.events}")
     event = db.session.get(Event, event_id)
     par_reg_events = current_user.participant.events
+    status = db.session.execute(select(ParticipantSport.status).where(ParticipantSport.participant_id==current_user.participant.id, ParticipantSport.sport_id == sport_id)).scalar()
+    print(f"participant id: {current_user.participant.id} event id: {event_id} and sport id: {sport_id} status: {status}")
+    print(status)
     if not par_reg_events:
-        event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
-        db.session.add(event_reg)
-        db.session.commit()
-        flash(f"you have been registerd for event: {event.name}", category="success")
-        return redirect(url_for("participant.scheduled_events"))
+        if status == 'active':
+            event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
+            db.session.add(event_reg)
+            db.session.commit()
+            flash(f"you have been registerd for event: {event.name}", category="success")
+            return redirect(url_for("participant.scheduled_events"))
+        else:
+            flash("You cannot participate in events of sports you are not approved for", category='info')
+            return redirect(url_for("participant.scheduled_events"))
     else:
         for pre in par_reg_events:
             if pre.event_id == event_id:
@@ -121,9 +128,13 @@ def register_for_event(event_id, sport_id):
                 flash('you are already registered for this event', category="info")
                 return redirect(url_for("participant.scheduled_events"))
         
-        print(pre.event_id, event_id)
+
+    if status == 'active':
         event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
         db.session.add(event_reg)
         db.session.commit()
         flash(f"you have been registerd for event: {event.name}", category="success")
+        return redirect(url_for("participant.scheduled_events"))
+    else:
+        flash("You cannot participate in events of sports you are not approved for", category='info')
         return redirect(url_for("participant.scheduled_events"))
