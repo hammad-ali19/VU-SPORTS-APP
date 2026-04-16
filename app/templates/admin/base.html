@@ -131,9 +131,17 @@
 
                 <li class="nav-item">
                     <a class="nav-link 
-                    {% if request.endpoint == 'admin.notifications' %}active{% endif %}"
-                    href="#">
-                        System Notifications
+                    {% if request.endpoint == 'admin.announcements' %}active{% endif %}"
+                    href="{{ url_for('admin.announcements') }}">
+                        Send Announcements
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link 
+                    {% if request.endpoint == 'admin.view_announcements' %}active{% endif %}"
+                    href="{{ url_for('admin.view_announcements') }}">
+                        View Announcements
                     </a>
                 </li>
 

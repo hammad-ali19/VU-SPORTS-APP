@@ -1,10 +1,10 @@
 from flask import abort, flash, redirect, render_template, session, url_for, request
-from flask_login import login_required
+from flask_login import login_required, current_user
 from sqlalchemy import select
 
 from .. import db
 from ..decorators import required_role
-from ..models import Sport, User, userRole, userStatus, Venue, Event
+from ..models import Announcement, AnnouncementRecipient, Sport, User, userRole, userStatus, Venue, Event
 from . import a_bp
 
 
@@ -112,6 +112,61 @@ def manage_event_scheduling():
     sports = db.session.execute(select(Sport)).scalars().all()
     events = db.session.execute(select(Event)).scalars().all()
     return render_template("admin/event_scheduling.html", venues=venues, sports=sports, events=events)
+
+@a_bp.route("/announcements", methods=['GET', 'POST'])
+@login_required
+@required_role(userRole.ADMIN)
+def announcements():
+    coaches = db.session.execute(select(User).where(User.role == userRole.COACH)).scalars().all()
+    participants = db.session.execute(select(User).where(User.role == userRole.PARTICIPANT)).scalars().all()
+    announcements = db.session.execute(select(Announcement).order_by(Announcement.created_at.desc())).scalars().all()
+
+    if request.method == 'POST':
+        rids = request.form.getlist('recipient_ids')
+        print(rids)
+        title = request.form.get('title', '').strip()
+        body = request.form.get('body', '').strip()
+        target = request.form.get('target')
+
+        if not title or not body or not target:
+            flash('Please fill in all announcement fields.', category='danger')
+            return redirect(url_for('admin.announcements'))
+
+        announcement = Announcement(title=title, body=body, sender_id=current_user.id)
+        db.session.add(announcement)
+
+        recipients = []
+        if target == 'all':
+            recipients = db.session.execute(select(User).where(User.role != userRole.ADMIN)).scalars().all()
+        elif target == 'coaches':
+            selected = [int(uid) for uid in request.form.getlist('recipient_ids') if uid.isdigit()]
+            recipients = db.session.execute(select(User).where(User.role == userRole.COACH, User.id.in_(selected))).scalars().all()
+        elif target == 'participants':
+            selected = [int(uid) for uid in request.form.getlist('recipient_ids') if uid.isdigit()]
+            recipients = db.session.execute(select(User).where(User.role == userRole.PARTICIPANT, User.id.in_(selected))).scalars().all()
+        else:
+            flash('Invalid announcement target.', category='danger')
+            return redirect(url_for('admin.announcements'))
+
+        if target in ['coaches', 'participants'] and not recipients:
+            flash('Please select at least one recipient for the chosen target.', category='danger')
+            return redirect(url_for('admin.announcements'))
+
+        for recipient in recipients:
+            announcement.recipients.append(AnnouncementRecipient(recipient_id=recipient.id))
+
+        db.session.commit()
+        flash('Announcement sent successfully.', category='success')
+        return redirect(url_for('admin.announcements'))
+
+    return render_template('admin/announcements.html', coaches=coaches, participants=participants, announcements=announcements)
+
+@a_bp.route("/view-announcements")
+@login_required
+@required_role(userRole.ADMIN)
+def view_announcements():
+    announcements = db.session.execute(select(Announcement).join(Announcement.sender).where(User.role == userRole.COACH)).scalars().all()
+    return render_template('admin/view_announcements.html', announcements=announcements)
 
 @a_bp.route("/add-event", methods=['POST'])
 @login_required

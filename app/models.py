@@ -33,6 +33,8 @@ class User(db.Model, UserMixin):
     participant: Mapped["Participant"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
     coach: Mapped["Coach"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
     admin: Mapped["Admin"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
+    announcements_sent: Mapped[List['Announcement']] = relationship(back_populates='sender')
+    announcement_recipients: Mapped[List['AnnouncementRecipient']] = relationship(back_populates='recipient', cascade='all, delete-orphan')
 
     def is_admin(self):
         return self.role.value == 'admin'
@@ -223,6 +225,35 @@ class TeamParticipant(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint('team_id', 'participant_id', name='uq_team_participant'),
+    )
+
+class Announcement(db.Model):
+    __tablename__ = 'announcements'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+    sender_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+
+    sender: Mapped['User'] = relationship(back_populates='announcements_sent')
+    recipients: Mapped[List['AnnouncementRecipient']] = relationship(back_populates='announcement', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<Announcement {self.id} by {self.sender.name if self.sender else 'Unknown'}>"
+
+class AnnouncementRecipient(db.Model):
+    __tablename__ = 'announcement_recipients'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    announcement_id: Mapped[int] = mapped_column(ForeignKey('announcements.id', ondelete='CASCADE'), nullable=False)
+    recipient_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
+    announcement: Mapped['Announcement'] = relationship(back_populates='recipients')
+    recipient: Mapped['User'] = relationship(back_populates='announcement_recipients')
+
+    __table_args__ = (
+        db.UniqueConstraint('announcement_id', 'recipient_id', name='uq_announcement_recipient'),
     )
 
 class EventRegistration(db.Model):

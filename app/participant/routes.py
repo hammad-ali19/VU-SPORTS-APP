@@ -20,6 +20,19 @@ def dashboard():
     return render_template("participant/dashboard.html", sports=ps)
 
 
+@p_bp.route("/announcements")
+@login_required
+@required_role(userRole.PARTICIPANT)
+def announcements():
+    announcements = db.session.execute(
+        select(Announcement)
+        .join(AnnouncementRecipient)
+        .where(AnnouncementRecipient.recipient_id == current_user.id)
+        .order_by(Announcement.created_at.desc())
+    ).scalars().all()
+    return render_template('participant/announcements.html', announcements=announcements)
+
+
 @p_bp.route("/my-profile", methods=['POST', 'GET'])
 @login_required
 @required_role(userRole.PARTICIPANT)

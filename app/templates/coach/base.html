@@ -116,6 +116,20 @@
 
                 <li class="nav-item">
                     <a class="nav-link 
+                    {% if request.endpoint == 'coach.announcements' %}active{% endif %}"
+                    href="{{ url_for('coach.announcements') }}">
+                        Send Announcements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link 
+                    {% if request.endpoint == 'coach.view_announcements' %}active{% endif %}"
+                    href="{{ url_for('coach.view_announcements') }}">
+                        View Announcements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link 
                     {% if request.endpoint == 'coach.teams' or request.endpoint == 'coach.create_team' or request.endpoint == 'coach.team_details' %}active{% endif %}"
                     href="{{ url_for('coach.teams') }}">
                         Teams
@@ -130,8 +144,9 @@
             {%with messages = get_flashed_messages(with_categories=true)%}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{category}}">
+                        <div class="alert alert-{{category}} alert-dismissible fade show" role="alert"">
                             {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     {% endfor %}
                 {% endif %}

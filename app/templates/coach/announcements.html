@@ -1,0 +1,64 @@
+{% extends "coach/base.html" %}
+
+{% block title %}
+<title>Coach Announcements</title>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4">
+        <h4 class="mb-3">📣 Send Announcement</h4>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-control" placeholder="Enter announcement title">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Message</label>
+                <textarea name="body" class="form-control" rows="4" placeholder="Write the announcement"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Target</label>
+                <select name="target" class="form-select">
+                    <option value="sport">Sport Participants</option>
+                    <option value="team">Team Members</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Team</label>
+                <select name="team_id" class="form-select">
+                    <option value="">Select a team</option>
+                    {% for team in teams %}
+                        <option value="{{ team.id }}">{{ team.name }} ({{ team.sport.name }})</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Choose a team if you want to send to a team only.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Announcement</button>
+        </form>
+    </div>
+
+    <div>
+        <h5 class="mb-3">Sent Announcements</h5>
+        {% if announcements %}
+            {% for announcement in announcements %}
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1">{{ announcement.title }}</h6>
+                                <small class="text-muted">{{ announcement.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <span class="badge bg-secondary">{{ announcement.recipients | length }} recipients</span>
+                        </div>
+                        <p class="card-text">{{ announcement.body }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-secondary">No announcements have been sent yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

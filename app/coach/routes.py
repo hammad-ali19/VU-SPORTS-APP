@@ -80,6 +80,74 @@ def teams():
     print(teams)
     return render_template("coach/teams.html", teams=teams, sport=sport)
 
+@c_bp.route("/announcements", methods=['GET', 'POST'])
+@login_required
+@required_role(userRole.COACH)
+def announcements():
+    sport = db.session.execute(select(Sport).where(current_user.coach.id == Sport.coach_id)).scalars().first()
+    teams = current_user.coach.teams
+    announcements = db.session.execute(select(Announcement).where(Announcement.sender_id == current_user.id).order_by(Announcement.created_at.desc())).scalars().all()
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        body = request.form.get('body', '').strip()
+        target = request.form.get('target')
+
+        if not title or not body or not target:
+            flash('Please fill in all announcement fields.', 'danger')
+            return redirect(url_for('coach.announcements'))
+
+        # announcement = Announcement(title=title, body=body, sender_id=current_user.id)
+        # db.session.add(announcement)
+
+        recipients = []
+        if target == 'sport':
+            if not sport:
+                flash('You do not have a sport assigned yet.', 'danger')
+                return redirect(url_for('coach.announcements'))
+            recipients = [ps.participant.user for ps in sport.participants if ps.status == 'active']
+        elif target == 'team':
+            team_id = request.form.get('team_id')
+            # if not team_id or not team_id.isdigit():
+            #     flash('Please select a team.', 'danger')
+            #     return redirect(url_for('coach.announcements'))
+            team = db.session.get(Team, int(team_id))
+            # if not team or team.coach_id != current_user.coach.id:
+            #     flash('Invalid team selected.', 'danger')
+            #     return redirect(url_for('coach.announcements'))
+            recipients = [member.participant.user for member in team.members]
+        else:
+            flash('Invalid announcement target.', 'danger')
+            return redirect(url_for('coach.announcements'))
+
+        if not recipients:
+            flash('No recipients were found for this announcement.', 'danger')
+            return redirect(url_for('coach.announcements'))
+
+        announcement = Announcement(title=title, body=body, sender_id=current_user.id)
+        db.session.add(announcement)
+
+        for recipient in recipients:
+            announcement.recipients.append(AnnouncementRecipient(recipient_id=recipient.id))
+
+        db.session.commit()
+        flash('Announcement sent successfully.', 'success')
+        return redirect(url_for('coach.announcements'))
+
+    return render_template('coach/announcements.html', sport=sport, teams=teams, announcements=announcements)
+
+@c_bp.route("/view-announcements")
+@login_required
+@required_role(userRole.COACH)
+def view_announcements():
+    announcements = db.session.execute(
+        select(Announcement)
+        .join(AnnouncementRecipient)
+        .where(AnnouncementRecipient.recipient_id == current_user.id)
+        .order_by(Announcement.created_at.desc())
+    ).scalars().all()
+    return render_template('coach/view_announcements.html', announcements=announcements)
+
 @c_bp.route("/create-team", methods=['GET', 'POST'])
 @login_required
 @required_role(userRole.COACH)
