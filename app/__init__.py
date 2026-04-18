@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session
 
-from .extensions import csrf, db, login_manager, migrate
+from .extensions import csrf, db, login_manager, migrate, mail
 from .models import User
 from .listeners import *
 
@@ -10,6 +10,12 @@ def create_app():
     app.config["SECRET_KEY"] = "SOMESECRETKEY"
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345@localhost:3306/vuss'
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/vuss"
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 465
+    app.config["MAIL_USERNAME"] = "bc220401578hal@vu.edu.pk"
+    app.config["MAIL_PASSWORD"] = "gswpmrldcoefdxqk"
+    app.config["MAIL_USE_TLS"] = False
+    app.config["MAIL_USE_SSL"] = True
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -17,6 +23,7 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "info"
+    mail.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):

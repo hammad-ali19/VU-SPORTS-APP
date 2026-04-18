@@ -5,21 +5,22 @@ from flask import render_template, session, url_for, redirect, request, flash
 from flask_login import login_required, current_user
 from ..decorators import required_role
 from ..models import *
+from app.utils.email import send_email
 
 @c_bp.route("/")
 def redirect_login():
-	return redirect(url_for("coach.dashboard"))
+    return redirect(url_for("coach.dashboard"))
 
 @c_bp.route("/dashboard")
 @login_required
 @required_role(userRole.COACH)
 def dashboard():
-	sport = db.session.execute(select(Sport).where(current_user.coach.id == Sport.coach_id)).scalars().first()
-	print(type(sport.participants))
-	print(sport.participants[0].participant.user.name)
-	# sport = session.get('coach-sport')
-	# participants = db.session.execute(select(Participant).where())
-	return render_template("coach/dashboard.html", sport=sport, participants=sport.participants)
+    sport = db.session.execute(select(Sport).where(current_user.coach.id == Sport.coach_id)).scalars().first()
+    print(type(sport.participants))
+    print(sport.participants[0].participant.user.name)
+    # sport = session.get('coach-sport')
+    # participants = db.session.execute(select(Participant).where())
+    return render_template("coach/dashboard.html", sport=sport, participants=sport.participants)
 
 
 @c_bp.route("/my-profile", methods=['POST', 'GET'])
@@ -55,7 +56,7 @@ def my_profile():
 @login_required
 @required_role(userRole.COACH)
 def manage_participants():
-	return render_template("coach/manage_participants.html")
+    return render_template("coach/manage_participants.html")
 
 
 @c_bp.route("/approve/<int:ps_id>", methods=['POST'])
@@ -63,13 +64,19 @@ def manage_participants():
 @required_role(userRole.COACH)
 def approve(ps_id):
 
-	ps = db.session.get(ParticipantSport, ps_id)
-	if ps.status != 'active':
-		ps.status = 'active'
-		ps.approved_by = ps.sport.coach.id
-		db.session.commit()
-		# db.session.refresh(current_user)
-	return redirect(url_for("coach.dashboard"))
+    ps = db.session.get(ParticipantSport, ps_id)
+    if ps.status != 'active':
+        ps.status = 'active'
+        ps.approved_by = ps.sport.coach.id
+        db.session.commit()
+        send_email(
+            sub="REGISTRATION REQUEST APPROVED! ",
+            body=f"Dear {ps.participant.user.name}, \nYour registration request for {ps.sport.name} has been approved by coach {ps.sport.coach.user.name}. You can now go on and login to your account.",
+            receiver_list=[ps.participant.user.email]
+        )
+
+        # db.session.refresh(current_user)
+    return redirect(url_for("coach.dashboard"))
 
 @c_bp.route("/teams")
 @login_required
@@ -254,6 +261,7 @@ def disable(ps_id):
 def events():
     coach = current_user.coach
     events = coach.sport.events
+    print(type(events))
     return render_template("coach/events.html", events=events)
 
 

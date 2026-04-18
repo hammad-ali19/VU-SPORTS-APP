@@ -108,7 +108,7 @@
 
                 <li class="nav-item">
                     <a class="nav-link 
-                    {% if request.endpoint == 'coach.events' %}active{% endif %}"
+                    {% if request.endpoint == 'coach.events' or request.endpoint == 'coach.event_participants'%}active{% endif %}"
                     href="{{ url_for('coach.events') }}">
                         Events
                     </a>

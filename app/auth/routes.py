@@ -2,6 +2,7 @@ from . import auth_bp
 from flask import request, render_template, flash, redirect, url_for, session
 from .forms import RegistrationForm, LoginForm
 from .. import db
+from app.utils.email import send_email
 from sqlalchemy import select
 from ..models import User, userRole, Participant, userStatus, ParticipantSport, Sport, Coach
 from flask_login import login_user, logout_user, login_required, current_user
@@ -55,7 +56,17 @@ def register():
 				# session.pop("from_admin", None)
 				# print(f"in auth after adding participant: {str(session.items())}")
 				flash("Participant added successfully", category='success')
+				send_email(
+					"PARTICIPANT REGISTRATION REQUEST! ",
+					f"Dear {user.name}, \nYour registration request has been made by admin. You will be informed via email once amin will approve you request. After that you will be able to Login to your account.",
+					[user.email])				
 				return redirect(url_for("admin.dashboard"))
+
+			send_email(
+				"PARTICIPANT REGISTRATION REQUEST! ",
+			 	f"Dear {user.name}, \nYour registration request has been accepted. You will be informed via email one your respective coach will approve you request. After that you will be able to Login to your account.",
+				[user.email])
+			
 			flash("successfully Registered! You will be able to login after caoch approval.", category='info')
 			return redirect(url_for("auth.login"))
 
@@ -78,7 +89,15 @@ def register():
 					session.pop("from_admin", None)
 					# print(f"in auth after adding participant: {str(session.items())}")
 					flash("Coach added successfully", category='success')
+					send_email(
+						"COACH REGISTRATION REQUEST! ",
+						f"Dear {user.name}, \nYour registration request has been made my admin. You will be informed via email once amin will approve you request. After that you will be able to Login to your account.",
+						[user.email])					
 					return redirect(url_for("admin.dashboard"))
+				send_email(
+					"COACH REGISTRATION REQUEST! ",
+					f"Dear {user.name}, \nYour registration request has been accepted. You will be informed via email once amin will approve you request. After that you will be able to Login to your account.",
+					[user.email])
 				flash("Successfully registered you account! Please wait for admin approval before login ", category='info')
 				return redirect(url_for("auth.login"))
 
