@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h3>
+        {{current_user.name}}: {{current_user.id}} chat with {{other_user.name}}: {{other_user.id}}
+    </h3>
+    <div id="chat-box">
+        {% for msg in messages %}
+            <p><b>{% if msg.sender.name == current_user.name %}You: {% else %} {{ msg.sender.name }}: {% endif %}</b> {{ msg.content }}</p>
+        {% endfor %}
+    </div>
+    
+    <input id="msg" type="text" placeholder="Type a message..." required>
+    <button id="btn" onclick="sendMessage()">Send</button>
+    
+    <script>
+        const socket = io();
+    
+        const OTHER_USER_ID = {{ other_user.id }};
+        const CURRENT_USER_ID = {{ current_user.id }}
+        
+        socket.emit("join_chat", {
+            other_user_id: OTHER_USER_ID
+        });
+    
+        function sendMessage() {
+            let input = document.getElementById("msg");
+            let message = input.value.trim()
+    
+            if (message === ""){
+                return;
+            }
+    
+            socket.emit("send_message", {
+                receiver_id: OTHER_USER_ID,
+                message: message
+            });
+    
+            input.value = "";
+        }
+    
+        socket.on("receive_message", function(data) {
+            let box = document.getElementById("chat-box");
+            let senderLabel = ""
+            if (data.sender_id === CURRENT_USER_ID) {
+                senderLabel = "You";
+            }
+            else {
+                senderLabel = data.sender_name
+            }
+            box.innerHTML += `<p><b>${senderLabel}:</b> ${data.message}</p>`;
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

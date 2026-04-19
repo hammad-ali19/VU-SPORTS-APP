@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session
 
-from .extensions import csrf, db, login_manager, migrate, mail
+from .extensions import csrf, db, login_manager, migrate, mail, socketio
 from .models import User
 from .listeners import *
 
@@ -24,6 +24,7 @@ def create_app():
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "info"
     mail.init_app(app)
+    socketio.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -48,11 +49,14 @@ def create_app():
     from .coach import c_bp
     from .home import home_bp
     from .participant import p_bp
+    from . import listeners
+    from .chatsection import cs_bp
 
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(p_bp)
     app.register_blueprint(c_bp)
     app.register_blueprint(a_bp)
+    app.register_blueprint(cs_bp)
 
     return app

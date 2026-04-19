@@ -270,3 +270,30 @@ class EventRegistration(db.Model):
     __table_args__ = (
         db.UniqueConstraint('event_id', 'participant_id', name='uq_event_registration'),
     )
+
+
+class Message(db.Model):
+    __tablename__ = 'messages'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    receiver_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    sender: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[sender_id],
+        backref="sent_messages"
+    )
+
+    receiver: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[receiver_id],
+        backref="received_messages"
+    )
+

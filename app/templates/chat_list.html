@@ -1,0 +1,9 @@
+<h3>Your Chats</h3>
+
+{% for user in users %}
+    {% if user.id != current_user.id %}
+        <a href="{{ url_for('chatsection.chat', user_id=user.id) }}">
+            Chat with {{ user.name }} {{user.id}}
+        </a><br>
+    {% endif %}
+{% endfor %}

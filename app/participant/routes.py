@@ -151,3 +151,14 @@ def register_for_event(event_id, sport_id):
     else:
         flash("You cannot participate in events of sports you are not approved for", category='info')
         return redirect(url_for("participant.scheduled_events"))
+
+
+# @p_bp.route('/chat/<int:user_id>')
+# @login_required
+# def chat(user_id):
+#     messages = Message.query.filter(
+#         ((Message.sender_id == current_user.id) & (Message.receiver_id == user_id)) |
+#         ((Message.sender_id == user_id) & (Message.receiver_id == current_user.id))
+#     ).order_by(Message.timestamp).all()
+
+#     return render_template("chat.html", messages=messages, other_user_id=user_id)
