@@ -6,4 +6,112 @@
             Chat with {{ user.name }} {{user.id}}
         </a><br>
     {% endif %}
-{% endfor %}
+{% endfor %} 
+
+
+
+
+
+
+
+
+
+
+
+
+{# <!--
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <title>Document</title>
+  <style>
+    .chat-item:hover {
+      background-color: #f8f9fa;
+      transition: 0.2s;
+    }
+
+    .chat-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container mt-4">
+    <div class="card shadow-sm border-0 rounded-3">
+
+      
+      <div class="card-header bg-primary border-bottom">
+        <h5 class="mb-0 fw-semibold text-white">Your Chats</h5>
+        <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search user by name...">
+      </div>
+
+      
+      <div class="card-body p-0" id="chatList">
+
+        {% for user in users %}
+        {% if user.id != current_user.id %}
+
+        <a href="{{ url_for('chatsection.chat', user_id=user.id) }}"
+          class="d-flex justify-content-between align-items-center px-3 py-3 text-decoration-none border-bottom chat-item"
+          data-name="{{ user.name | lower }}">
+
+          <div>
+            <div class="fw-semibold text-dark">
+              {{ user.name }}
+            </div>
+            <small class="text-muted">
+              User ID: {{ user.id }}
+            </small>
+          </div>
+
+          <span class="text-primary">
+            Open
+          </span>
+
+        </a>
+
+        {% endif %}
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const chatList = document.getElementById("chatList");
+
+    searchInput.addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+      const items = Array.from(chatList.querySelectorAll(".chat-item"));
+
+      items.sort((a, b) => {
+        const nameA = a.dataset.name;
+        const nameB = b.dataset.name;
+
+        const matchA = nameA.includes(query);
+        const matchB = nameB.includes(query);
+
+        // matched items come first
+        if (matchA && !matchB) return -1;
+        if (!matchA && matchB) return 1;
+
+        // keep original order otherwise
+        return 0;
+      });
+
+      // re-append in new order
+      items.forEach(item => chatList.appendChild(item));
+    });
+  </script>
+</body>
+
+</html> --> #}

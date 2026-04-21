@@ -58,13 +58,13 @@ def register():
 				flash("Participant added successfully", category='success')
 				send_email(
 					"PARTICIPANT REGISTRATION REQUEST! ",
-					f"Dear {user.name}, \nYour registration request has been made by admin. You will be informed via email once amin will approve you request. After that you will be able to Login to your account.",
+					f"Dear {user.name}, \nYour registration request has been made by admin. You will be informed via email once amin will approve your request. After that you will be able to Login to your account.",
 					[user.email])				
 				return redirect(url_for("admin.dashboard"))
 
 			send_email(
 				"PARTICIPANT REGISTRATION REQUEST! ",
-			 	f"Dear {user.name}, \nYour registration request has been accepted. You will be informed via email one your respective coach will approve you request. After that you will be able to Login to your account.",
+			 	f"Dear {user.name}, \nYour registration request has been accepted. You will be informed via email once your respective coach will approve your request. After that you will be able to Login to your account.",
 				[user.email])
 			
 			flash("successfully Registered! You will be able to login after caoch approval.", category='info')
