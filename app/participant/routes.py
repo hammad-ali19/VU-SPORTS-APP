@@ -162,3 +162,12 @@ def register_for_event(event_id, sport_id):
 #     ).order_by(Message.timestamp).all()
 
 #     return render_template("chat.html", messages=messages, other_user_id=user_id)
+
+
+@p_bp.route("join-teams")
+@login_required
+@required_role(userRole.PARTICIPANT)
+def join_teams():
+    teams = db.session.execute(select(Team)).scalars().all()
+    print(teams)
+    return "ok"

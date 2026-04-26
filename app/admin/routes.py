@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from .. import db
 from ..decorators import required_role
-from ..models import Announcement, AnnouncementRecipient, Sport, User, userRole, userStatus, Venue, Event
+from ..models import *
 from . import a_bp
 
 
@@ -247,3 +247,25 @@ def delete_event(event_id):
     db.session.commit()
     flash("Event deleted successfully", category='success')
     return redirect(url_for('admin.manage_event_scheduling'))
+
+
+@a_bp.route("/teams-management")
+@login_required
+@required_role(userRole.ADMIN)
+def teams_management():
+    teams = db.session.execute(select(Team)).scalars().all()
+    print(type(teams))
+    print(teams)
+    for t in teams:
+        print(t.name)
+    return render_template("admin/teams-management.html", teams=teams)
+
+
+@a_bp.route('/approve-team/<int:team_id>', methods=['POST'])
+@login_required
+@required_role(userRole.ADMIN)
+def approve_team(team_id):
+    team = Team.query.get_or_404(team_id)
+    team.approved = True
+    db.session.commit()
+    return redirect(url_for('admin.teams_management'))

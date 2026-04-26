@@ -165,10 +165,10 @@ def create_team():
         name = request.form.get('name')
         max_participants = request.form.get('max_participants')
         if name and max_participants:
-            team = Team(name=name, max_participants=int(max_participants), sport_id=sport.id, coach_id=current_user.coach.id)
+            team = Team(name=name, max_participants=int(max_participants), approved=False, sport_id=sport.id, coach_id=current_user.coach.id)
             db.session.add(team)
             db.session.commit()
-            flash("Team created successfully!", "success")
+            flash("Team created successfully! Participants would be able to join after admin approves the team.", "success")
             return redirect(url_for("coach.teams"))
         else:
             flash("Please fill all fields.", "danger")
