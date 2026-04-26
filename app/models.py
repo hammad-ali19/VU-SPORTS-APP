@@ -1,8 +1,8 @@
 from keyword import kwlist
 
-from datetime import datetime
+from datetime import datetime, date
 from .extensions import db
-from sqlalchemy import UniqueConstraint, String, CheckConstraint, func, Enum, ForeignKey, DateTime, Integer, Text, Boolean, Date, Time
+from sqlalchemy import UniqueConstraint, String, CheckConstraint, Date, func, Enum, ForeignKey, DateTime, Integer, Text, Boolean, Date, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from flask_login import UserMixin
@@ -126,7 +126,7 @@ class Sport(db.Model):
         cascade='all, delete-orphan'
     )
 
-    # events: Mapped[List['Event']] = relationship(back_populates='sport')
+    events: Mapped[List['Event']] = relationship(back_populates='sport', cascade="all, delete-orphan")
     teams: Mapped[List['Team']] = relationship(back_populates='sport')
 
     def __repr__(self):
@@ -298,3 +298,26 @@ class Message(db.Model):
         backref="received_messages"
     )
 
+
+class Event(db.Model):
+    __tablename__ = 'events'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sport_id: Mapped[int] = mapped_column(ForeignKey('sports.id', ondelete='CASCADE'))
+
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[date] = mapped_column(Date, nullable=False)
+
+    sport: Mapped["Sport"] = relationship(back_populates="events")
+
+    __table_args__ = (
+        CheckConstraint("end_date >= start_date", name="check_dates")
+    )
+
+
+class Match(db.Model):
+    __tablename__ = 'matches'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    
