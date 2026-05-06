@@ -195,32 +195,24 @@
             <thead class="table-light">
               <tr>
                 <th>Event</th>
-                <th>Venue</th>
                 <th>Sport</th>
-                <th>Date & Time</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Approved</th>
               </tr>
             </thead>
 
             <tbody>
-              {% for event in registered_events %}
+              {% for er in registered_events %}
               <tr>
                 <td class="fw-semibold text-capitalize">
-                  {{ event.name }}
+                  {{ er.event.name }}
                 </td>
 
                 <td>
-                  {% if event.venue %}
-                  <i class="bi bi-geo-alt text-muted me-1"></i>
-                  {{ event.venue.location }}
-                  {% else %}
-                  <span class="text-muted">N/A</span>
-                  {% endif %}
-                </td>
-
-                <td>
-                  {% if event.sport %}
+                  {% if er.event.sport %}
                   <span class="badge bg-info text-dark px-2 py-1">
-                    {{ event.sport.name }}
+                    {{ er.event.sport.name }}
                   </span>
                   {% else %}
                   <span class="text-muted">N/A</span>
@@ -229,8 +221,16 @@
 
                 <td>
                   <i class="bi bi-clock text-muted me-1"></i>
-                  {{ event.date_time }}
+                  {{ er.event.start_date }}
                 </td>
+                <td>
+                  <i class="bi bi-clock text-muted me-1"></i>
+                  {{ er.event.end_date }}
+                </td>
+
+                <td>
+                  <span>{% if er.approved %} YES {% else %} NO {% endif %} </span>
+                </td> 
               </tr>
               {% endfor %}
             </tbody>
@@ -262,9 +262,10 @@
             <thead class="table-light">
               <tr>
                 <th>Event</th>
-                <th>Venue</th>
+                
                 <th>Sport</th>
-                <th>Date & Time</th>
+                <th>Start Date</th>
+                <th>End Date</th>
                 <th class="text-center">Action</th>
               </tr>
             </thead>
@@ -275,15 +276,6 @@
 
                 <td class="fw-semibold text-capitalize">
                   {{ event.name }}
-                </td>
-
-                <td>
-                  {% if event.venue %}
-                  <i class="bi bi-geo-alt text-muted me-1"></i>
-                  {{ event.venue.location }}
-                  {% else %}
-                  <span class="text-muted">N/A</span>
-                  {% endif %}
                 </td>
 
                 <td>
@@ -298,7 +290,11 @@
 
                 <td>
                   <i class="bi bi-clock text-muted me-1"></i>
-                  {{ event.date_time }}
+                  {{ event.start_date }}
+                </td>
+                <td>
+                  <i class="bi bi-clock text-muted me-1"></i>
+                  {{ event.end_date }}
                 </td>
 
                 <td class="text-center">

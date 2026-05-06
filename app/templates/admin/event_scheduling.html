@@ -211,9 +211,10 @@
           <thead class="table-light">
             <tr>
               <th>Event</th>
-              <th>Venue</th>
+
               <th>Sport</th>
-              <th>Date & Time</th>
+              <th>Start Date</th>
+              <th>End Date</th>
               <th class="text-end">Action</th>
             </tr>
           </thead>
@@ -226,14 +227,6 @@
                 {{ event.name | capitalize }}
               </td>
 
-              <td>
-                {% if event.venue %}
-                <i class="bi bi-geo-alt text-muted"></i>
-                {{ event.venue.location }}
-                {% else %}
-                <span class="text-muted">N/A</span>
-                {% endif %}
-              </td>
 
               <td>
                 {% if event.sport %}
@@ -247,9 +240,12 @@
 
               <td>
                 <i class="bi bi-clock text-muted"></i>
-                {{ event.date_time }}
+                {{ event.start_date }}
               </td>
-
+              <td>
+                <i class="bi bi-clock text-muted"></i>
+                {{ event.end_date }}
+              </td>
               <td class="text-end">
                 <form action="{{url_for('admin.delete_event', event_id=event.id)}}" method="post">
                   <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
@@ -302,39 +298,30 @@
 
           <div class="row">
             <div class="col">
-              <label class="form-label">Date</label>
-              <input type="date" name="date" class="form-control" required>
+              <label class="form-label">Start Date</label>
+              <input type="date" name="start_date" class="form-control" required>
             </div>
+
             <div class="col">
-              <label class="form-label">Time</label>
-              <input type="time" name="time" class="form-control" required>
+              <label class="form-label">End Date</label>
+              <input type="date" name="end_date" class="form-control" required>
             </div>
-          </div>
 
-          <div class="mt-3">
-            <label class="form-label">Venue</label>
-            <select name="venue_id" class="form-select" required>
-              <option disabled selected>Choose venue...</option>
-              {% for venue in venues %}
-              <option value="{{ venue.id }}">{{ venue.location }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="mt-3">
-            <label class="form-label">Sport</label>
-            <select name="sport_id" class="form-select" required>
-              <option disabled selected>Choose sport...</option>
-              {% for sport in sports %}
-              <option value="{{ sport.id }}">{{ sport.name }}</option>
-              {% endfor %}
-            </select>
+            <div class="mt-3">
+              <label class="form-label">Sport</label>
+              <select name="sport_id" class="form-select" required>
+                <option disabled selected>Choose sport...</option>
+                {% for sport in sports %}
+                <option value="{{ sport.id }}">{{ sport.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
           </div>
 
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
           <button class="btn btn-primary">Save Event</button>
         </div>
 
@@ -375,7 +362,7 @@
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
           <button class="btn btn-primary">Save Venue</button>
         </div>
 
@@ -383,5 +370,9 @@
     </div>
   </div>
 </div>
-
+<form action="{{url_for('admin.event_registrations')}}" method="GET">
+  <button type="submit">
+    Pending event registrations
+  </button>
+</form>
 {% endblock %}

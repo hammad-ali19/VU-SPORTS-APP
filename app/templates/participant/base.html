@@ -119,7 +119,14 @@
                     href="{{ url_for('chatsection.chat_list') }}">
                         Chat
                     </a>
-                </li>                
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link
+                    {% if request.endpoint == 'participant.teams' %} active{% endif %} "
+                    href="{{url_for('participant.teams')}}">
+                        Teams
+                    </a>
+                </li>                          
             </ul>
         </div>
 

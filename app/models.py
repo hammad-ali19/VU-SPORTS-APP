@@ -2,7 +2,7 @@ from keyword import kwlist
 
 from datetime import datetime, date
 from .extensions import db
-from sqlalchemy import UniqueConstraint, String, CheckConstraint, Date, func, Enum, ForeignKey, DateTime, Integer, Text, Boolean, Date, Time
+from sqlalchemy import UniqueConstraint, String, CheckConstraint, Date, func, Enum, ForeignKey, DateTime, Integer, Text, Boolean, Date, Time, Computed
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from flask_login import UserMixin
@@ -75,7 +75,7 @@ class Participant(db.Model, UserMixin):
         cascade='all, delete-orphan'
     )
     teams: Mapped[List['TeamParticipant']] = relationship(back_populates='participant',cascade='all, delete-orphan')
-    # events: Mapped[List['EventRegistration']] = relationship(back_populates='participant', cascade='all, delete-orphan')
+    events: Mapped[List['EventRegistration']] = relationship(back_populates='participant', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<Id: {self.id}, Name: {self.user.name}>"
@@ -172,6 +172,8 @@ class Venue(db.Model):
     location: Mapped[str] = mapped_column(Text, nullable=False)
     availability: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
+    matches: Mapped[List['Match']] = relationship(back_populates='venue')
+
     # events: Mapped[List['Event']] = relationship(back_populates='venue')
 
 # class Event(db.Model):
@@ -210,7 +212,7 @@ class Team(db.Model):
     members: Mapped[List['TeamParticipant']] = relationship(back_populates='team', cascade='all, delete-orphan')
 
     def __repr__(self):
-        return f"<ID: {self.id}, Team Name: {self.name}, Members: {len(self.members)}, Approved: {self.approved}>"
+        return f"<ID: {self.id}, Sport: {self.sport.name} Team Name: {self.name}, Members: {len(self.members)}, Approved: {self.approved}>"
 
 class TeamParticipant(db.Model):
     __tablename__ = 'team_participants'
@@ -224,9 +226,20 @@ class TeamParticipant(db.Model):
     team: Mapped['Team'] = relationship(back_populates='members')
     participant: Mapped['Participant'] = relationship(back_populates='teams')
 
+    is_captain: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    captain_team_id: Mapped[int] = mapped_column(
+    Computed("CASE WHEN is_captain THEN team_id ELSE NULL END"),
+    nullable=True
+    )
+
     __table_args__ = (
         db.UniqueConstraint('team_id', 'participant_id', name='uq_team_participant'),
+        UniqueConstraint('captain_team_id', name='uq_one_captain_per_team'),        
     )
+
+    def __repr__(self):
+        return f"<id: {self.id}, part_name: {self.participant.user.name}, team_name: {self.team.name}>"
 
 class Announcement(db.Model):
     __tablename__ = 'announcements'
@@ -257,20 +270,6 @@ class AnnouncementRecipient(db.Model):
         db.UniqueConstraint('announcement_id', 'recipient_id', name='uq_announcement_recipient'),
     )
 
-# class EventRegistration(db.Model):
-#     __tablename__ = 'event_registrations'
-
-#     id: Mapped[int] = mapped_column(primary_key=True)
-
-#     participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id", ondelete='CASCADE'), nullable=False)
-#     event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete='CASCADE'), nullable=False)
-
-#     event: Mapped['Event'] = relationship(back_populates='event_participants')
-#     participant: Mapped['Participant'] = relationship(back_populates='events')
-
-#     __table_args__ = (
-#         db.UniqueConstraint('event_id', 'participant_id', name='uq_event_registration'),
-#     )
 
 
 class Message(db.Model):
@@ -303,21 +302,107 @@ class Event(db.Model):
     __tablename__ = 'events'
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
     sport_id: Mapped[int] = mapped_column(ForeignKey('sports.id', ondelete='CASCADE'))
 
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     sport: Mapped["Sport"] = relationship(back_populates="events")
+    event_participants: Mapped[List['EventRegistration']] = relationship(back_populates='event', cascade="all, delete-orphan")
+    matches: Mapped[List['Match']] = relationship(back_populates='event')
 
     __table_args__ = (
-        CheckConstraint("end_date >= start_date", name="check_dates")
+        CheckConstraint("end_date >= start_date", name="check_dates"),
     )
+
+    def __repr__(self):
+        return f"<id: {self.id}, event_name: {self.name}>"
+
+class EventRegistration(db.Model):
+    __tablename__ = 'event_registrations'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id", ondelete='CASCADE'), nullable=False)
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete='CASCADE'), nullable=False)
+    approved: Mapped[bool] = mapped_column(Boolean, default=0)
+
+    event: Mapped['Event'] = relationship(back_populates='event_participants')
+    participant: Mapped['Participant'] = relationship(back_populates='events')
+
+    __table_args__ = (
+        db.UniqueConstraint('event_id', 'participant_id', name='uq_event_registration'),
+    )
+
+    def __repr__(self):
+        return f"<id: {self.id}, pid: {self.participant.id}, approved: {self.approved}>"
+
+
+class EventTeamStatus(db.Model):
+    __tablename__ = 'event_team_status'
+
+    id: Mapped[int] = mapped_column(primary_key=True) 
+
+    event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'), nullable=False)
+    team_id: Mapped[int] = mapped_column(ForeignKey('teams.id', ondelete='CASCADE'))
+
+    event: Mapped['Event'] = relationship()
+    team: Mapped['Team'] = relationship()
+
+    team_phase_in_event: Mapped[str] = mapped_column(String(20))
+
 
 
 class Match(db.Model):
     __tablename__ = 'matches'
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    match_type: Mapped[str] = mapped_column(String(10))
+    match_stage: Mapped[str] = mapped_column(String(20))
 
+    team1_id: Mapped[int] = mapped_column(ForeignKey("teams.id", ondelete="CASCADE"), nullable=True)
+    team2_id: Mapped[int] = mapped_column(ForeignKey('teams.id', ondelete="CASCADE"), nullable=True)
+
+    player1_id: Mapped[int] = mapped_column(ForeignKey('participants.id', ondelete="CASCADE"), nullable=True)
+    player2_id: Mapped[int] = mapped_column(ForeignKey('participants.id', ondelete="CASCADE"), nullable=True)
+    
+    team1: Mapped["Team"] = relationship(foreign_keys=[team1_id])
+    team2: Mapped["Team"] = relationship(foreign_keys=[team2_id])
+
+    player1: Mapped["Participant"] = relationship(foreign_keys=[player1_id])
+    player2: Mapped["Participant"] = relationship(foreign_keys=[player2_id])
+
+    winner_participant_id: Mapped[int] = mapped_column(ForeignKey('participants.id'), nullable=True)
+    winner_team_id: Mapped[int] = mapped_column(ForeignKey('teams.id'), nullable=True)
+
+    winner_participant: Mapped["Participant"] = relationship(foreign_keys=[winner_participant_id])
+    winner_team: Mapped["Team"] = relationship(foreign_keys=[winner_team_id])
+
+    venue_id: Mapped[int] = mapped_column(ForeignKey('venues.id'), nullable=False)
+    venue: Mapped['Venue'] = relationship(back_populates='matches')
+
+    event_id: Mapped[int] = mapped_column(ForeignKey('events.id'), nullable=True)
+    event: Mapped["Event"] = relationship(back_populates='matches')
+
+    date_time: Mapped[datetime] = mapped_column(DateTime, nullable=True, unique=True)
+
+    @property
+    def teams(self):
+        return [t for t in [self.team1, self.team2] if t is not None]
+
+    @property
+    def players(self):
+        return [p for p in [self.player1, self.player2] if p is not None]
+
+    @property
+    def winner(self):
+        return self.winner_participant or self.winner_team
+
+    __table_args__ = (
+        CheckConstraint(
+            "match_type IN ('single', 'team')",
+            name="check_match_type"
+        ),
+    )
     

@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+
+<div>Hello world</div>
+
+{% if event_registration_requests %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Event Name</th>
+            <th>Sport</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    {% for er in event_registration_requests %}
+    <tbody>
+        <tr>
+            <td>
+                {{er.participant.user.name}}
+            </td>
+        
+    
+            <td>
+                {{er.event.name}}
+            </td>
+
+    
+            <td>
+                {{er.event.sport.name}}
+            </td>
+
+    
+            <td>
+                <form action="{{url_for('admin.approve_or_reject_event_registration', per_id=er.id)}}" method="post" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                    {% if er.approved %}
+                        <button disabled>Approved</button>
+                    
+                    {% else %}
+                        <button name="btn" value="1">Approve</button>
+                        <button name="btn" value="0">Reject</button>
+                    {% endif %}
+
+                </form>
+            </td>
+        </tr>
+    </tbody>
+    
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

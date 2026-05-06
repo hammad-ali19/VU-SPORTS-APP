@@ -72,14 +72,14 @@ def team_members(team_id):
 
 @p_bp.route("/scheduled-events", methods=['GET'])
 def scheduled_events():
-    from datetime import datetime
+    from datetime import date
     from sqlalchemy import select
 
     # 1. Get the current time
-    now = datetime.now()
+    today = date.today()
 
     # 2. Build the query
-    stmt = select(Event).where(Event.date_time >= now).order_by(Event.date_time.asc())
+    stmt = select(Event).where(Event.start_date >=today ).order_by(Event.start_date.asc())
 
     # 3. Execute (assuming 'db.session' if using Flask-SQLAlchemy)
     upcoming_events = db.session.scalars(stmt).all()
@@ -95,20 +95,22 @@ def scheduled_events():
     for s in sports:
         events.append(s.events)
     # print(sports)
-    # print(events)
+    print(events)
     all_events = []
     for event_array in events:
         for event in event_array:
-            if event.date_time >= datetime.now():
+            print(event)
+            if event.start_date >= date.today():
                 all_events.append(event)
+    print(all_events)
     registered_events = []
     for er in current_user.participant.events:
-        if er.event.date_time >= datetime.now():
-            registered_events.append(er.event)
+        if er.event.start_date >= date.today():
+            registered_events.append(er)
     print(registered_events)
     # print(type(sports[0]))
     # print((all_events))
-    
+    # print(registered_events[0])
     return render_template("participant/scheduled_events.html", events=all_events, registered_events=registered_events)
 #     return {
 #     "sports": [{"id": s.id, "name": s.name} for s in sports],
@@ -129,7 +131,7 @@ def register_for_event(event_id, sport_id):
             event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
             db.session.add(event_reg)
             db.session.commit()
-            flash(f"you have been registerd for event: {event.name}", category="success")
+            flash(f"You will be notified when admin approves you request for {event.name}", category="success")
             return redirect(url_for("participant.scheduled_events"))
         else:
             flash("You cannot participate in events of sports you are not approved for", category='info')
@@ -146,7 +148,7 @@ def register_for_event(event_id, sport_id):
         event_reg = EventRegistration(participant_id=current_user.participant.id, event_id=event_id)
         db.session.add(event_reg)
         db.session.commit()
-        flash(f"you have been registerd for event: {event.name}", category="success")
+        flash(f"You will be notified when admin approves you request for {event.name}", category="success")
         return redirect(url_for("participant.scheduled_events"))
     else:
         flash("You cannot participate in events of sports you are not approved for", category='info')
@@ -164,10 +166,72 @@ def register_for_event(event_id, sport_id):
 #     return render_template("chat.html", messages=messages, other_user_id=user_id)
 
 
-@p_bp.route("join-teams")
+@p_bp.route("teams")
 @login_required
 @required_role(userRole.PARTICIPANT)
-def join_teams():
-    teams = db.session.execute(select(Team)).scalars().all()
+def teams():
+    participant = current_user.participant
+    par_sports = participant.sports
+    print(par_sports)
+    teams = []
+    for ps in par_sports:
+        teams.append(ps.sport.teams)
+    teams = [item for sublist in teams for item in sublist]
+    # teams = db.session.execute(select(Team)).scalars().all()
     print(teams)
-    return "ok"
+    return render_template('participant/available_teams.html',teams=teams)
+
+
+
+@p_bp.route('/join-team/<int:team_id>', methods=['POST'])
+@login_required
+def join_team(team_id):
+    participant = current_user.participant
+    team = Team.query.get_or_404(team_id)
+
+    existing = TeamParticipant.query.filter_by(
+        team_id=team.id,
+        participant_id=participant.id
+    ).first()
+
+    if existing:
+        flash("You are already in this team.", "warning")
+        return redirect(url_for('participant.teams'))
+
+    if len(team.members) >= team.max_participants:
+        flash("Team is full.", "danger")
+        return redirect(url_for('participant.teams'))
+
+    if not team.approved:
+        flash("This team is not approved yet.", "warning")
+        return redirect(url_for('participant.teams'))
+
+    already_in_same_sport = any(
+        tp.team.sport_id == team.sport_id
+        for tp in participant.teams
+    )
+
+    if already_in_same_sport:
+        flash("You already joined a team for this sport.", "warning")
+        return redirect(url_for('participant.teams'))
+
+
+    tp = TeamParticipant(
+        team_id=team.id,
+        participant_id=participant.id
+    )
+    db.session.add(tp)
+    db.session.commit()
+
+    flash("Successfully joined the team!", "success")
+    return redirect(url_for('participant.teams'))
+
+
+@p_bp.route('/leave_team/<int:team_id>', methods=['POST'])
+def leave_team(team_id):
+    participant = current_user.participant
+    tm = db.session.execute(select(TeamParticipant).where(TeamParticipant.participant_id == participant.id and TeamParticipant.team_id == team_id)).scalar()
+    flash(f"You have successfully been removed from {tm.team.name}.", category='success')
+    db.session.delete(tm)
+    db.session.commit()
+    return redirect(url_for('participant.dashboard'))

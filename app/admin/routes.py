@@ -1,6 +1,7 @@
 from flask import abort, flash, redirect, render_template, session, url_for, request
 from flask_login import login_required, current_user
 from sqlalchemy import select
+from app.utils.email import send_email
 
 from .. import db
 from ..decorators import required_role
@@ -172,24 +173,23 @@ def view_announcements():
 @login_required
 @required_role(userRole.ADMIN)
 def add_event():
-    date = request.form.get('date')
-    time = request.form.get('time')
-    date_time = date + " " + time
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
+
     name = request.form.get('name')
-    venue_id = request.form.get('venue_id')
+
     sport_id = request.form.get('sport_id')
-    print(date_time)
-    e = db.session.execute(select(Event).where(Event.date_time==date_time)).scalars().first()
-    if e:
-        flash("Event on this Date and Time already exists!", category='error')
+    
+    if end_date < start_date:
+        flash("Please select right dates", category='info')
         return redirect(url_for("admin.manage_event_scheduling"))
 
-    else:
-        event = Event(name=name, date_time=date_time, sport_id=sport_id, venue_id=venue_id)
-        db.session.add(event)
-        db.session.commit()
-        flash("Event added successfully!", category='success')
-        return redirect(url_for("admin.manage_event_scheduling"))
+    print(f"start_date: {start_date}, end_date: {end_date}, name: {name}, sport_id: {sport_id}, {end_date > start_date}")
+    event = Event(name=name, start_date=start_date, end_date=end_date, sport_id=sport_id)
+    db.session.add(event)
+    db.session.commit()
+    flash("Event added successfully!", category='success')
+    return redirect(url_for("admin.manage_event_scheduling"))
 
 
 @a_bp.route("/add-venue", methods=['POST'])
@@ -269,3 +269,48 @@ def approve_team(team_id):
     team.approved = True
     db.session.commit()
     return redirect(url_for('admin.teams_management'))
+
+@a_bp.route('/remove-team/<int:team_id>', methods=['POST'])
+@login_required
+@required_role(userRole.ADMIN)
+def remove_team(team_id):
+    team = Team.query.get_or_404(team_id)
+    if team:
+        db.session.delete(team)
+        db.session.commit()
+        flash("Team deleted successfully", category='success')
+        return redirect(url_for('admin.teams_management'))
+        
+
+@a_bp.route('/event_registrations', methods=['POST','GET'])
+def event_registrations():
+    event_registration_requests = db.session.execute(select(EventRegistration).order_by(EventRegistration.approved.asc())).scalars().all()
+    
+    return render_template("admin/event_registrations.html", event_registration_requests=event_registration_requests)
+
+
+@a_bp.route('/approve_or_reject_event_registration/<int:per_id>', methods=['POST', 'GET'])
+def approve_or_reject_event_registration(per_id):
+    value = int(request.form.get('btn'))
+    reg_request = db.session.get(EventRegistration, int(per_id))
+    if value == 1:
+        print("inside if")
+        reg_request.approved = True
+        db.session.commit()
+        send_email(
+            "EVENT REGISTRAION APPROVED",
+            f"Your registraion request for {reg_request.event.name} has been approved by ADMIN",
+            [reg_request.participant.user.email]
+        )
+    else:
+        send_email(
+            "EVENT REGISTRAION REJECTED",
+            f"Your registraion request for {reg_request.event.name} has been rejected by ADMIN for some reason",
+            [reg_request.participant.user.email]
+        )        
+        db.session.delete(reg_request)
+        db.session.commit()
+
+    print(reg_request)
+    return redirect(url_for('admin.event_registrations'))
+    # return f" {value} {per_id} {reg_request.approved} inside approve_event_registration"

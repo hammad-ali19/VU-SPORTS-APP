@@ -101,14 +101,21 @@
                                 <strong>{{ tp.team.name }}</strong><br>
                                 <small class="text-muted">{{ tp.team.sport.name }}</small>
                             </div>
+                            <div>
 
-                            <form method="post" action="{{ url_for('participant.team_members', team_id=tp.team.id) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button class="btn btn-sm btn-outline-primary">
-                                    View Members
-                                </button>
-                            </form>
-
+                                <form method="post" action="{{ url_for('participant.team_members', team_id=tp.team.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        View Members
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ url_for('participant.leave_team', team_id=tp.team.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-danger" onclick="return confirm('Do you really want to leave this team.')">
+                                        Leave
+                                    </button>
+                                </form>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
