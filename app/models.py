@@ -385,7 +385,7 @@ class Match(db.Model):
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id'), nullable=True)
     event: Mapped["Event"] = relationship(back_populates='matches')
 
-    date_time: Mapped[datetime] = mapped_column(DateTime, nullable=True, unique=True)
+    date_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
     @property
     def teams(self):
@@ -404,5 +404,6 @@ class Match(db.Model):
             "match_type IN ('single', 'team')",
             name="check_match_type"
         ),
+        UniqueConstraint('date_time', 'venue_id', name='uq_match')
     )
     

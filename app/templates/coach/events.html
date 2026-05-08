@@ -36,8 +36,7 @@
 
                             <!-- Event Info -->
                             <p class="text-muted mb-2">
-                                🏟 {{ e.venue.location if e.venue else "No venue assigned" }}<br>
-                                🕒 {{ e.start_date }}
+                                🕒 {{ e.start_date }} - {{ e.end_date   }}
                             </p>
 
 
@@ -55,12 +54,14 @@
                                         View Participants
                                     </button>
                                 </form>
-
-                                <!-- Future actions -->
-                                <button class="btn btn-sm btn-outline-secondary" disabled>
-                                    Edit
-                                </button>
-
+                                <form method="POST" action="{{ url_for('coach.event_details', event_id=e.id)}}">
+                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        Manage
+                                    </button>
+                                </form>
+                                    
+                                
                             </div>
 
                         </div>
@@ -74,5 +75,8 @@
         </div>
     {% endif %}
 
+</div>
+<div>
+    <a class="btn btn-primary" href="{{url_for('home')}}">Testing</a>
 </div>
 {% endblock %}

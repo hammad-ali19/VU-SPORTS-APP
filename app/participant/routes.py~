@@ -95,19 +95,19 @@ def scheduled_events():
     for s in sports:
         events.append(s.events)
     # print(sports)
-    # print(events)
+    print(events)
     all_events = []
     for event_array in events:
         for event in event_array:
             print(event)
             if event.start_date >= date.today():
                 all_events.append(event)
-    # print(all_events)
+    print(all_events)
     registered_events = []
     for er in current_user.participant.events:
         if er.event.start_date >= date.today():
             registered_events.append(er)
-    # print(registered_events)
+    print(registered_events)
     # print(type(sports[0]))
     # print((all_events))
     # print(registered_events[0])

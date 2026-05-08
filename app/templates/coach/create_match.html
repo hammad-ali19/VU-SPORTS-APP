@@ -1,0 +1,221 @@
+{% extends 'coach/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+
+                    <h2 class="text-center mb-4 fw-bold">
+                        Create Match
+                    </h2>
+
+                    <form action="{{url_for('coach.create_match', event_id=event.id)}}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+
+                        <!-- Match Type -->
+                        <div class="mb-4">
+                            <label for="type" class="form-label fw-semibold">
+                                Match Type
+                            </label>
+
+                            <select name="type" id="type" class="form-select" >
+                                <option value="select" selected>
+                                    Select match type
+                                </option>
+                                <option value="single">Single</option>
+                                <option value="team">Team</option>
+                            </select>
+                        </div>
+
+                        <!-- TEAM SECTION -->
+                        <div class="row g-3 mb-4" id="teamFields" style="display:none;">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Team Side 1</label>
+
+                                <select name="team_side1" class="form-select" >
+                                    {% if teams %}
+                                    <option value="">Select side one</option>
+
+                                    {% for t in teams %}
+                                    <option value="{{t.id}}">
+                                        {{t.name}}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Team Side 2</label>
+
+                                <select name="team_side2" class="form-select" >
+                                    {% if teams %}
+                                    <option value="">Select side two</option>
+
+                                    {% for t in teams %}
+                                    <option value="{{t.id}}">
+                                        {{t.name}}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <!-- SINGLE SECTION -->
+                        <div class="row g-3 mb-4" id="singleFields" style="display:none;">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Player Side 1</label>
+
+                                <select name="single_side1" class="form-select" >
+                                    {% if participants %}
+                                    <option value="">Select side one</option>
+
+                                    {% for p in participants %}
+                                    <option value="{{p.participant.id}}">
+                                        {{p.participant.user.name}}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Player Side 2</label>
+
+                                <select name="single_side2" class="form-select" >
+                                    {% if participants %}
+                                    <option value="">Select side two</option>
+
+                                    {% for p in participants %}
+                                    <option value="{{p.participant.id}}">
+                                        {{p.participant.user.name}}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <!-- Match Stage -->
+                        <div class="mb-4">
+                            <label for="stage" class="form-label fw-semibold">
+                                Match Stage
+                            </label>
+
+                            <select name="stage" id="stage" class="form-select" >
+                                <option value="select" selected>
+                                    Select match stage
+                                </option>
+                                <option value="group-stage">
+                                    Group Stage
+                                </option>
+                                <option value="quarterfinal">
+                                    Quarter Final
+                                </option>
+                                <option value="semifinal">
+                                    Semi Final
+                                </option>
+                                <option value="final">
+                                    Final
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Venue -->
+                        <div class="mb-4">
+                            <label for="venue" class="form-label fw-semibold">
+                                Venue
+                            </label>
+
+                            <select name="venue" id="venue" class="form-select" >
+                                <option value="select" selected>
+                                    Select a venue
+                                </option>
+
+                                {% if venues %}
+                                    {% for v in venues %}
+                                    <option value="{{v.id}}">
+                                        {{v.location}}
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="mb-4">
+                            <label for="date" class="form-label fw-semibold">
+                                Match Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="date"
+                                id="date"
+                                class="form-control">
+                            <small class="text-black text-opacity-50">Event Duration: {{event.start_date}} - {{event.end_date}}</small>
+                        </div>
+
+                        <!-- Time -->
+                        <div class="mb-4">
+                            <label for="time" class="form-label fw-semibold">
+                                Match Time
+                            </label>
+
+                            <input
+                                type="time"
+                                name="time"
+                                id="time"
+                                class="form-control"
+                                
+                            >
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-3">
+                                Create Match
+                            </button>
+                        </div>
+
+                    </form> 
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const typeSelect = document.getElementById('type');
+    const teamFields = document.getElementById('teamFields');
+    const singleFields = document.getElementById('singleFields');
+
+    typeSelect.addEventListener('change', function () {
+
+        if (this.value === 'team') {
+            teamFields.style.display = 'flex';
+            singleFields.style.display = 'none';
+        }
+        else if (this.value === 'single') {
+            singleFields.style.display = 'flex';
+            teamFields.style.display = 'none';
+        }
+        else {
+            teamFields.style.display = 'none';
+            singleFields.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

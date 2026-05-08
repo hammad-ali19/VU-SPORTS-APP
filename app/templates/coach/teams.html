@@ -13,6 +13,7 @@
                     <th>Team Name</th>
                     <th>Max Participants</th>
                     <th>Current Members</th>
+                    <th>Approval Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -22,6 +23,7 @@
                     <td>{{ team.name }}</td>
                     <td>{{ team.max_participants }}</td>
                     <td>{{ team.members|length }}</td>
+                    <td>{{team.approved}}</td>
                     <td>
                         <a href="{{ url_for('coach.team_details', team_id=team.id) }}" class="btn btn-info btn-sm">Manage</a>
                     </td>

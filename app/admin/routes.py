@@ -298,14 +298,14 @@ def approve_or_reject_event_registration(per_id):
         reg_request.approved = True
         db.session.commit()
         send_email(
-            "EVENT REGISTRAION APPROVED",
-            f"Your registraion request for {reg_request.event.name} has been approved by ADMIN",
+            "EVENT REGISTRATION APPROVED",
+            f"Your registration request for {reg_request.event.name} has been approved by ADMIN",
             [reg_request.participant.user.email]
         )
     else:
         send_email(
-            "EVENT REGISTRAION REJECTED",
-            f"Your registraion request for {reg_request.event.name} has been rejected by ADMIN for some reason",
+            "EVENT REGISTRATION REJECTED",
+            f"Your registration request for {reg_request.event.name} has been rejected by ADMIN for some reason",
             [reg_request.participant.user.email]
         )        
         db.session.delete(reg_request)

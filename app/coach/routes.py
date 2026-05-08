@@ -271,3 +271,195 @@ def event_participants(event_id):
     event = db.get_or_404(Event, event_id)
     # event = Event.query.get_or_404(event_id)
     return render_template('coach/event_participants.html', event=event)
+
+
+@c_bp.route('/event_details/<int:event_id>', methods=['POST', 'GET'])
+def event_details(event_id):
+    e = db.session.get(Event, int(event_id))
+    print(e)
+    print(e.sport.teams)
+    teams = e.sport.teams
+    matches = e.matches
+    return render_template('coach/event_details.html', event=e, teams=teams, matches=matches)
+
+
+@c_bp.route('event_details/<int:event_id>/create_match', methods=['POST', 'GET'])
+def create_match(event_id):
+
+    event = db.session.get(Event, int(event_id))
+    teams = event.sport.teams
+    participants = event.sport.participants
+    venues = db.session.execute(select(Venue)).scalars().all()
+    event_start = event.start_date
+    event_end = event.end_date
+    print(event_start, event_end)
+    
+    if request.method == 'POST':
+        date = request.form.get('date')
+        time = request.form.get('time')
+        match_type = request.form.get('type')
+        stage = request.form.get('stage')
+        venue_id = request.form.get('venue')
+        team1 = request.form.get('team_side1')
+        team2 = request.form.get('team_side2')
+        player1 = request.form.get('single_side1')
+        player2 = request.form.get('single_side2')
+        print(match_type, stage, venue_id, date, time, team1, team2, player1, player2)
+        errors = []
+
+            
+        # BASIC VALIDATION
+        
+
+        if match_type not in ['single', 'team']:
+            flash("Please select a valid match type.", "danger")
+            return redirect(url_for('coach.create_match', event_id=event_id))
+
+        if stage == 'select':
+            flash("Please select a match stage.", "danger")
+            return redirect(url_for('coach.create_match', event_id=event_id))
+
+        if venue_id == 'select':
+            flash("Please select a venue.", "danger")
+            return redirect(url_for('coach.create_match', event_id=event_id))
+
+        if not date:
+            flash("Please select a match date.", "danger")
+            return redirect(url_for('coach.create_match', event_id=event_id))
+
+        if not time:
+            flash("Please select a match time", "danger")
+            return redirect(url_for('coach.create_match', event_id=event_id))
+
+        # TEAM MATCH VALIDATION
+
+        if match_type == 'team':
+
+            side1 = request.form.get('team_side1')
+            side2 = request.form.get('team_side2')
+
+            if not side1 or not side2:
+                flash("Please select both teams")
+                return redirect(url_for('coach.create_match', event_id=event_id))
+
+            elif side1 == side2:
+                flash("A team cannot play against itself.", "danger")
+                return redirect(url_for('coach.create_match', event_id=event_id))
+
+        # SINGLE MATCH VALIDATION
+
+        if match_type == 'single':
+
+            side1 = request.form.get('single_side1')
+            side2 = request.form.get('single_side2')
+
+            if not side1 or not side2:
+                flash("Please select both participants.")
+                return redirect(url_for('coach.create_match', event_id=event_id))
+
+            elif side1 == side2:
+                flash("A participant cannot play against themseleves.", "danger")
+                return redirect(url_for('coach.create_match', event_id=event_id))
+
+        print(f'date: {type(date)}, event_start: {type(event_start)}')
+        date = datetime.strptime(date, "%Y-%m-%d").date()
+
+        if not event_start <= date <= event_end:
+            flash("selected date is invalid for this event", category='warning')
+            return redirect(url_for('coach.create_match', event_id=event_id))
+            print("selected date is invalid for this event")
+
+        match_datetime = None
+
+        if date and time:
+
+            try:
+                match_datetime = datetime.strptime(
+                    f"{date} {time}",
+                    "%Y-%m-%d %H:%M"
+                )
+
+                # check if venue already booked
+                existing_match = db.session.execute(
+                    select(Match).where(
+                        Match.venue_id == int(venue_id),
+                        Match.date_time == match_datetime
+                    )
+                ).scalar_one_or_none()
+
+                if existing_match:
+                    flash("Another match is already scheduled at this venue on this date and time.", "danger")
+                    return redirect(url_for('coach.create_match', event_id=event_id))
+                    print('match already exists')
+                    # return redirect(url_for('coach.create_match', event_id=event_id))
+
+            except ValueError:
+                errors.append('Invalid date or time format.')
+                        
+            # SHOW ERRORS
+
+            if errors:
+
+                for error in errors:
+                    flash(error, 'danger')
+
+                return render_template(
+                    'coach/create_match.html',
+                    venues=venues,
+                    event=event,
+                    teams=teams,
+                    participants=participants
+                )
+
+            # flash('Match validated successfully.', 'success')
+
+        new_match = Match(
+        match_type=match_type,
+        match_stage=stage,
+        venue_id=int(venue_id),
+        event_id=event.id,
+        date_time=match_datetime
+        )
+
+        # TEAM MATCH
+        if match_type == 'team':
+            new_match.team1_id = int(team1)
+            new_match.team2_id = int(team2)
+
+        # SINGLE MATCH
+        if match_type == 'single':
+            new_match.player1_id = int(player1)
+            new_match.player2_id = int(player2)
+
+        db.session.add(new_match)
+        db.session.commit()
+
+        flash('Match created successfully.', 'success')
+        return redirect(url_for('coach.create_match', event_id=event_id))
+
+    return render_template(
+        'coach/create_match.html',
+        venues=venues,
+        event=event,
+        teams=teams,
+        participants=participants
+    )
+    
+@c_bp.route('/set_match_winner/<int:match_id>', methods=['POST'])
+def set_match_winner(match_id):
+
+    match = db.session.get(Match, match_id)
+
+    winner_id = request.form.get('winner_id')
+
+    if match.match_type == 'team':
+        match.winner_team_id = int(winner_id)
+
+    else:
+        match.winner_participant_id = int(winner_id)
+
+    db.session.commit()
+    print(f"{type(match.winner)}")
+    return redirect(
+        url_for('coach.event_details', event_id=match.event_id)
+    )
