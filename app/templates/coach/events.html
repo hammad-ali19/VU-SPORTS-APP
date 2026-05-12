@@ -25,54 +25,59 @@
     </div>
 
     {% if events %}
-        <div class="row">
-            {% for e in events |reverse%}
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body d-flex flex-column">
+    <div class="row">
+        {% for e in events |reverse%}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
 
-                            <!-- Event Title -->
-                            <h5 class="card-title">{{ e.name }}</h5>
+                    <!-- Event Title -->
+                    <h5 class="card-title">{{ e.name }}</h5>
 
-                            <!-- Event Info -->
-                            <p class="text-muted mb-2">
-                                🕒 {{ e.start_date }} - {{ e.end_date   }}
-                            </p>
+                    <!-- Event Info -->
+                    <p class="text-muted mb-2">
+                        🕒 {{ e.start_date }} - {{ e.end_date }}
+                        {% if e.start_date <= today <=e.end_date %} <span class='badge bg-success'> ongoing </span>
+                            {%elif e.start_date > today %}
+                            <span class='badge bg-warning'> upcoming </span>
+
+                            {% endif %}
+                    </p>
 
 
-                            <!-- Participants Count -->
-                            <p class="mb-3">
-                                👥 <strong>{{ e.event_participants | length }}</strong> registered
-                            </p>
+                    <!-- Participants Count -->
+                    <p class="mb-3">
+                        👥 <strong>{{ e.event_participants | length }}</strong> registered
+                    </p>
 
-                            <!-- Actions -->
-                            <div class="mt-auto d-flex justify-content-between">
-                                
-                                <!-- View Participants -->
-                                <form method="GET" action="{{ url_for('coach.event_participants', event_id=e.id) }}">
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        View Participants
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ url_for('coach.event_details', event_id=e.id)}}">
-                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                                    <button class="btn btn-sm btn-outline-secondary">
-                                        Manage
-                                    </button>
-                                </form>
-                                    
-                                
-                            </div>
+                    <!-- Actions -->
+                    <div class="mt-auto d-flex justify-content-between">
 
-                        </div>
+                        <!-- View Participants -->
+                        <form method="GET" action="{{ url_for('coach.event_participants', event_id=e.id) }}">
+                            <button class="btn btn-sm btn-outline-primary">
+                                View Participants
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('coach.event_details', event_id=e.id)}}">
+                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                            <button class="btn btn-sm btn-outline-secondary">
+                                Manage
+                            </button>
+                        </form>
+
+
                     </div>
+
                 </div>
-            {% endfor %}
+            </div>
         </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <div class="alert alert-info">
-            No events available.
-        </div>
+    <div class="alert alert-info">
+        No events available.
+    </div>
     {% endif %}
 
 </div>

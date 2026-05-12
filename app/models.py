@@ -345,10 +345,12 @@ class EventTeamStatus(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True) 
 
     event_id: Mapped[int] = mapped_column(ForeignKey('events.id', ondelete='CASCADE'), nullable=False)
-    team_id: Mapped[int] = mapped_column(ForeignKey('teams.id', ondelete='CASCADE'))
+    team_id: Mapped[int] = mapped_column(ForeignKey('teams.id', ondelete='CASCADE'), nullable=True)
+    participant_id: Mapped[int] = mapped_column(ForeignKey('participants.id', ondelete='CASCADE'), nullable=True)
 
     event: Mapped['Event'] = relationship()
     team: Mapped['Team'] = relationship()
+    participant: Mapped['Participant'] = relationship()
 
     team_phase_in_event: Mapped[str] = mapped_column(String(20))
 

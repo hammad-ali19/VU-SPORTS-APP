@@ -1,184 +1,190 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    {% block title %}<title>VU Sports Society</title>{% endblock title %}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block title %}<title>VU Sports Society</title>{% endblock title %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"> -->
-    <style>
-        .sidebar {
-            background-color: #f8f9fa;
-            height: 100vh;
-            border-right: 1px solid #dee2e6;
-        }
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"> -->
+  <style>
+    .sidebar {
+      background-color: #f8f9fa;
+      height: 100vh;
+      border-right: 1px solid #dee2e6;
+    }
 
-        .sidebar .nav-link {
-            color: #333;
-            font-weight: 500;
-            border-radius: 6px;
-            margin-bottom: 5px;
-        }
+    .sidebar .nav-link {
+      color: #333;
+      font-weight: 500;
+      border-radius: 6px;
+      margin-bottom: 5px;
+    }
 
-        .sidebar .nav-link.active {
-            background-color: #0d6efd;
-            color: white;
-        }
+    .sidebar .nav-link.active {
+      background-color: #0d6efd;
+      color: white;
+    }
 
-        .sidebar .nav-link:hover {
-            background-color: #c9c9c9;
-        }
+    .sidebar .nav-link:hover {
+      background-color: #c9c9c9;
+    }
 
-        .sidebar .nav-link.active:hover {
-            background-color: #005de9;
-            
-        }
-        .content-area {
-            padding: 30px;
-        }
-    </style>
+    .sidebar .nav-link.active:hover {
+      background-color: #005de9;
+
+    }
+
+    .content-area {
+      padding: 30px;
+    }
+  </style>
 </head>
+
 <body>
 
 
-<nav class="navbar navbar-dark bg-primary px-3">
+  <nav class="navbar navbar-dark bg-primary px-3">
 
     <!-- Left Section -->
     <div class="d-flex align-items-center">
-        <!-- Hamburger (only small screens) -->
-        <button class="navbar-toggler d-md-none me-2"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#sidebarMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+      <!-- Hamburger (only small screens) -->
+      <button class="navbar-toggler d-md-none me-2" type="button" data-bs-toggle="collapse"
+        data-bs-target="#sidebarMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <!-- Brand -->
-          <span class="navbar-brand mb-0 h1">VU Sports Society</span>
+      <!-- Brand -->
+      <span class="navbar-brand mb-0 h1">VU Sports Society</span>
     </div>
 
     <!-- Right Section -->
     <div class="d-flex align-items-center ms-auto">
-        <span class="text-white me-3 d-none d-sm-inline">
-            Welcome, Admin
-        </span>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm">
-            Logout
-        </a>
+      <span class="text-white me-3 d-none d-sm-inline">
+        Welcome, Admin
+      </span>
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm">
+        Logout
+      </a>
     </div>
 
-</nav>
+  </nav>
 
 
 
 
-<div class="container-fluid">
+  <div class="container-fluid">
     <div class="row">
-     <!-- Sidebar -->
-        {# <div class="col-md-2 sidebar p-1 pt-3"> #}
+      <!-- Sidebar -->
+      {# <div class="col-md-2 sidebar p-1 pt-3"> #}
         <div class="col-12 col-md-2 collapse d-md-block sidebar p-1 pt-3" id="sidebarMenu">
-            <ul class="nav flex-column pe-1">
+          <ul class="nav flex-column pe-1">
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.dashboard' %}active{% endif %}"
-                    href="{{ url_for('admin.dashboard') }}">
-                        Dashboard
-                    </a>
-                </li>
+                href="{{ url_for('admin.dashboard') }}">
+                Dashboard
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.manage_participants' %}active{% endif %}"
-                    href="{{ url_for('admin.manage_participants')}}">
-                        Manage Participants
-                    </a>
-                </li>
+                href="{{ url_for('admin.manage_participants')}}">
+                Manage Participants
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.manage_coaches' %}active{% endif %}"
-                    href="{{ url_for('admin.manage_coaches')}}">
-                        Manage Coaches
-                    </a>
-                </li>
+                href="{{ url_for('admin.manage_coaches')}}">
+                Manage Coaches
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.manage_sports' %}active{% endif %}"
-                    href="{{ url_for('admin.manage_sports')}}">
-                        Manage Sports
-                    </a>
-                </li>
+                href="{{ url_for('admin.manage_sports')}}">
+                Manage Sports
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.manage_event_scheduling' or request.endpoint == 'admin.event_registrations' %}active{% endif %}"
-                    href="{{ url_for('admin.manage_event_scheduling')}}">
-                        Event Management
-                    </a>
-                </li>
+                href="{{ url_for('admin.manage_event_scheduling')}}">
+                Event Management
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.teams_management' %}active{% endif %}"
-                    href="{{ url_for('admin.teams_management')}}">
-                        Team Management
-                    </a>
-                </li>                
+                href="{{ url_for('admin.teams_management')}}">
+                Team Management
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
-                    {% if request.endpoint == 'admin.reports' %}active{% endif %}"
-                    href="#">
-                        Reports & Statistics
-                    </a>
-                </li>
+            <li class="nav-item">
+              <a class="nav-link 
+                    {% if request.endpoint == 'admin.reports' %}active{% endif %}" href="#">
+                Reports & Statistics
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.announcements' %}active{% endif %}"
-                    href="{{ url_for('admin.announcements') }}">
-                        Send Announcements
-                    </a>
-                </li>
+                href="{{ url_for('admin.announcements') }}">
+                Send Announcements
+              </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="nav-link 
+            <li class="nav-item">
+              <a class="nav-link 
                     {% if request.endpoint == 'admin.view_announcements' %}active{% endif %}"
-                    href="{{ url_for('admin.view_announcements') }}">
-                        View Announcements
-                    </a>
-                </li>
-
-            </ul>
+                href="{{ url_for('admin.view_announcements') }}">
+                View Announcements
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('chatsection.chat_list') }}">
+                Chat
+              </a>
+            </li>
+          </ul>
         </div>
 
         <!-- Content -->
         <div class="col-12 col-md-10 content-area">
-                
-            {% block message %}
-            {%with messages = get_flashed_messages(with_categories=true)%}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{category}}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            {% endblock %}   
-            {% block content %}{% endblock %}
+
+          {% block message %}
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+          {% endblock %}
+          {% block content %}{% endblock %}
         </div>
 
-    </div>    
-</div>
+      </div>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-{% block script %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block script %}{% endblock %}
 
-<!-- <script src="/js/bootstrap.bundle.js"></script> -->
+    <!-- <script src="/js/bootstrap.bundle.js"></script> -->
 </body>
+
 </html>

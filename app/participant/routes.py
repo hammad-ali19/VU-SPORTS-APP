@@ -1,6 +1,7 @@
 from flask import redirect, render_template, url_for, request, flash
 from flask_login import current_user, login_required
 from sqlalchemy import select
+from datetime import date
 from .. import db
 from ..decorators import required_role
 from ..models import *
@@ -72,50 +73,70 @@ def team_members(team_id):
 
 @p_bp.route("/scheduled-events", methods=['GET'])
 def scheduled_events():
-    from datetime import date
-    from sqlalchemy import select
-
-    # 1. Get the current time
     today = date.today()
+    participant = current_user.participant
+    # participant sports ids
+    sport_ids = [ps.sport_id for ps in participant.sports]
+    # REGISTERED EVENTS
+    registered_events = (
+        db.session.scalars(
+            select(EventRegistration)
+            .join(Event)
+            .where(
+                EventRegistration.participant_id == participant.id,
+                # Event.end_date >= today
+            )
+            .order_by(Event.start_date.asc())
+        ).all()
+    )
+    # ids of already registered events
+    registered_event_ids = [er.event_id for er in registered_events]
+    # ONGOING EVENTS
+    ongoing_events = (
+        db.session.scalars(
+            select(Event)
+            .where(
+                Event.sport_id.in_(sport_ids),
+                Event.start_date <= today,
+                Event.end_date >= today,
+                ~Event.id.in_(registered_event_ids)
+            )
+            .order_by(Event.start_date.asc())
+        ).all()
+    )
+    # UPCOMING EVENTS
+    upcoming_events = (
+        db.session.scalars(
+            select(Event)
+            .where(
+                Event.sport_id.in_(sport_ids),
+                Event.start_date > today,
+                ~Event.id.in_(registered_event_ids)
+            )
+            .order_by(Event.start_date.asc())
+        ).all()
+    )
 
-    # 2. Build the query
-    stmt = select(Event).where(Event.start_date >=today ).order_by(Event.start_date.asc())
+    past_events = (
+        db.session.scalars(
+            select(Event)
+            .where(
+                Event.sport_id.in_(sport_ids),
+                Event.end_date < today
+            )
+            .order_by(Event.start_date.asc())
+        ).all()
+    )
 
-    # 3. Execute (assuming 'db.session' if using Flask-SQLAlchemy)
-    upcoming_events = db.session.scalars(stmt).all()
-    # print(upcoming_events)
+    return render_template(
+        "participant/scheduled_events.html",
+        ongoing_events=ongoing_events,
+        upcoming_events=upcoming_events,
+        registered_events=registered_events,
+        past_events=past_events,
+        today=today
+    )
 
-
-
-    participant_sports = current_user.participant.sports
-    sports = []
-    for ps in participant_sports:
-        sports.append(ps.sport)
-    events = []
-    for s in sports:
-        events.append(s.events)
-    # print(sports)
-    # print(events)
-    all_events = []
-    for event_array in events:
-        for event in event_array:
-            print(event)
-            if event.start_date >= date.today():
-                all_events.append(event)
-    # print(all_events)
-    registered_events = []
-    for er in current_user.participant.events:
-        if er.event.start_date >= date.today():
-            registered_events.append(er)
-    # print(registered_events)
-    # print(type(sports[0]))
-    # print((all_events))
-    # print(registered_events[0])
-    return render_template("participant/scheduled_events.html", events=all_events, registered_events=registered_events)
-#     return {
-#     "sports": [{"id": s.id, "name": s.name} for s in sports],
-#     "events": [{"id": e.id, "name": e.name} for e in all_events]
-# }
 
 @p_bp.route("scheduled-events/register-for-event/<int:event_id>/<int:sport_id>", methods=['POST', 'GET'])
 def register_for_event(event_id, sport_id):
@@ -235,3 +256,38 @@ def leave_team(team_id):
     db.session.delete(tm)
     db.session.commit()
     return redirect(url_for('participant.dashboard'))
+
+
+@p_bp.route("/event_details/<int:event_id>", methods=['POST', 'GET'])
+def event_details(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    matches = (
+        Match.query
+        .filter(Match.event_id == event_id)
+        .order_by(Match.date_time.asc())
+        .all()
+    )
+
+    team_statuses = (
+        EventTeamStatus.query
+        .filter(EventTeamStatus.event_id == event_id)
+        .all()
+    )
+
+    grouped_status = {}
+
+    for status in team_statuses:
+        phase = status.team_phase_in_event
+
+        if phase not in grouped_status:
+            grouped_status[phase] = []
+
+        grouped_status[phase].append(status)
+
+    return render_template(
+        "participant/event_details.html",
+        event=event,
+        matches=matches,
+        grouped_status=grouped_status
+    )

@@ -1,0 +1,101 @@
+{% extends 'coach/base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                Assign Status / Rank
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            {% if type == 'team' %}
+                <h5>
+                    Team:
+                    <span class="text-primary">
+                        {{ winner.name }}
+                    </span>
+                </h5>
+            {% else %}
+                <h5>
+                    Player:
+                    <span class="text-primary">
+                        {{ winner.user.name }}
+                    </span>
+                </h5>
+            {% endif %}
+
+            <hr>
+
+            <form method="POST">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Select Status
+                    </label>
+
+                    <select name="team_phase_in_event"
+                            class="form-select"
+                            required>
+
+                        <option value="">
+                            Choose Status
+                        </option>
+
+                        <option value="Winner">
+                            Winner
+                        </option>
+
+                        <option value="Runner Up">
+                            Runner Up
+                        </option>
+
+                        <option value="Semi Finalist">
+                            Semi Finalist
+                        </option>
+
+                        <option value="Quarter Finalist">
+                            Quarter Finalist
+                        </option>
+
+                        <option value="Eliminated">
+                            Eliminated
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-success">
+
+                    Save Status
+
+                </button>
+
+                <a href="{{ url_for('coach.event_details', event_id=event_id) }}"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

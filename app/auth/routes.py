@@ -6,7 +6,7 @@ from app.utils.email import send_email
 from sqlalchemy import select
 from ..models import User, userRole, Participant, userStatus, ParticipantSport, Sport, Coach
 from flask_login import login_user, logout_user, login_required, current_user
-# from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 @auth_bp.route("/")
 def redirect_login():
@@ -27,12 +27,12 @@ def register():
 		selected_sports_ids = form.sports.data
 		# print(selected_sports_ids)
 		email = form.email.data
-		# hashed_password = generate_password_hash(form.password.data)
+		hashed_password = generate_password_hash(form.password.data)
 		# print(len(hashed_password))
 		if role == 'participant':
-			user = User(name=name, email=email, password=form.password.data, status=userStatus.ACTIVE, role=role.upper())
+			user = User(name=name, email=email, password=hashed_password, status=userStatus.ACTIVE, role=role.upper())
 		else:
-			user = User(name=name, email=email, password=form.password.data, status=userStatus.PENDING, role=role.upper())
+			user = User(name=name, email=email, password=hashed_password, status=userStatus.PENDING, role=role.upper())
 		db.session.add(user)
 		db.session.commit()
 		# print("user added")
@@ -113,13 +113,13 @@ def login():
 		role = form.role.data
 		stmt = select(User).where(User.email==email)
 		user = db.session.execute(stmt).scalars().first()
-
+		pass_valid = check_password_hash(user.password, password)
 		if not user:
 			flash("Account does not exist. Please register first.", category="danger")
 			return render_template("login.html", form=form)
 
 		elif role == 'admin':
-			if user.email == email and user.password == password and user.role.value == role:
+			if user.email == email and pass_valid and user.role.value == role:
 				login_user(user)
 				flash("You have logged in successfully", category='success')
 				return redirect(url_for("admin.dashboard"))
@@ -131,7 +131,7 @@ def login():
 			if user.status.value != 'active':
 				flash("Your account is pending for approval", category='info')
 				return render_template("login.html", form=form)
-			elif user.email == email and user.password == password and user.role.value == role:
+			elif user.email == email and pass_valid and user.role.value == role:
 				login_user(user)
 				sport = user.coach.sport.name
 				# session['coach-sport'] = sport
@@ -162,7 +162,7 @@ def login():
 					# break
 			# session['sports'] = sports
 			if status_approved:
-				if user.email == email and user.password == password and user.role.value == role:
+				if user.email == email and pass_valid and user.role.value == role:
 					login_user(user)
 					flash("You have logged in successfully", category='success')
 					return redirect(url_for("participant.dashboard"))

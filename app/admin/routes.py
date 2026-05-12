@@ -104,6 +104,23 @@ def manage_sports():
     sports = db.session.execute(select(Sport)).scalars().all()
     return render_template("admin/manage_sports.html", sports=sports)
 
+@a_bp.route("/add-sport", methods=['POST', 'GET'])
+@login_required
+@required_role(userRole.ADMIN)
+def add_sport():
+    name = (request.form.get('name')).lower().strip()
+    
+    sports = db.session.scalars(select(Sport)).all()
+    for s in sports:
+        if s.name.lower() == name:
+            flash('sport already exists', 'warning')
+            return redirect(url_for('admin.manage_sports'))
+    s = Sport(name=name)
+    db.session.add(s)
+    db.session.commit()
+    return redirect(url_for('admin.manage_sports'))
+
+
 
 @a_bp.route("/event-scheduling")
 @login_required

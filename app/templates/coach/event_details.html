@@ -186,13 +186,16 @@
                             <td>
                                 {% if match.winner %}
                                     {% if match.match_type == 'team' %}
-                                        <span class="badge bg-success">
+                                        <a href="{{url_for('coach.rank_team', match_id=match.id, winner_id=match.winner.id, event_id=match.event.id, type=match.match_type)}}">{{ match.winner.name }}</a>
+                                        <!-- <span class="badge bg-success">
                                             {{ match.winner.name }}
-                                        </span>
+                                        </span> -->
                                     {% else %}
-                                        <span class="badge bg-success">
+                                        <a href="{{url_for('coach.rank_team', match_id=match.id, winner_id=match.winner.id, event_id=match.event.id, type=match.match_type)}}">{{ match.winner.user.name }}</a>
+
+                                        <!-- <span class="badge bg-success">
                                             {{ match.winner.user.name }}
-                                        </span>
+                                        </span> -->
                                     {% endif %}                       
                                 {% else %}
 

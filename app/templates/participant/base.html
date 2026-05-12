@@ -108,16 +108,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link 
-                    {% if request.endpoint == 'participant.scheduled_events' %}active{% endif %}"
+                    {% if request.endpoint == 'participant.scheduled_events' or request.endpoint == 'participant.event_details' %}active{% endif %}"
                     href="{{ url_for('participant.scheduled_events') }}">
-                        Scheduled Events
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                    href="{{ url_for('chatsection.chat_list') }}">
-                        Chat
+                        Events
                     </a>
                 </li>
                 <li class="nav-item">
@@ -127,6 +120,13 @@
                         Teams
                     </a>
                 </li>                          
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="{{ url_for('chatsection.chat_list') }}">
+                        Chat
+                    </a>
+                </li>
             </ul>
         </div>
 

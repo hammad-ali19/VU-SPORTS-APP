@@ -199,14 +199,14 @@
                         {% else %}
                         <span class="badge bg-secondary">Not Assigned</span>
                         {% endif %}
-
+                        {% if not s.coach_id %}
                         <!-- Assign/Edit Coach -->
-                        <!-- <button class="btn btn-sm btn-outline-primary"
+                        <button class="btn btn-sm btn-outline-primary"
                                     data-bs-toggle="modal"
                                     data-bs-target="#assignCoachModal{{ s.id }}">
                                 <i class="bi bi-person-gear"></i>
-                            </button> -->
-
+                            </button>
+                        {% endif %}
                     </div>
 
                 </li>
@@ -274,7 +274,7 @@
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <form method="POST" action="#">
+            <form method="POST" action="{{url_for('admin.add_sport')}}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="modal-body">

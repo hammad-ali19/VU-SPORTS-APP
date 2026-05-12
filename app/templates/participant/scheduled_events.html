@@ -1,283 +1,127 @@
-{# <!-- {% extends "participant/base.html" %}
-
-{% block title %}<title>Scheduled Events</title>{% endblock %}
-
-{% block content %}
-<h4 class="mb-2">Registered Events </h4>
-<div class="card shadow-sm border-0 rounded-3">
-  <div class="card-body p-0">
-
-    {% if registered_events %}
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-
-        <thead class="table-light">
-          <tr>
-            <th>Event</th>
-            <th>Venue</th>
-            <th>Sport</th>
-            <th>Date & Time</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for event in registered_events %}
-          <tr>
-
-            <td class="fw-semibold">
-              {{ event.name | capitalize }}
-            </td>
-
-            <td>
-              {% if event.venue %}
-              <i class="bi bi-geo-alt text-muted"></i>
-              {{ event.venue.location }}
-              {% else %}
-              <span class="text-muted">N/A</span>
-              {% endif %}
-            </td>
-
-            <td>
-              {% if event.sport %}
-              <span class="badge bg-info text-dark">
-                {{ event.sport.name }}
-              </span>
-              {% else %}
-              <span class="text-muted">N/A</span>
-              {% endif %}
-            </td>
-
-            <td>
-              <i class="bi bi-clock text-muted"></i>
-              {{ event.date_time }}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-
-      </table>
-    </div>
-
-    {% else %}
-    <div class="text-center p-5 text-muted">
-      <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-      <p class="mt-2 mb-0">You've not registered for any event</p>
-    </div>
-    {% endif %}
-
-
-
-
-
-
-    <h4 class="mb-2 mt-2">Upcomming Events: </h4>
-    {% if events %}
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-
-        <thead class="table-light">
-          <tr>
-            <th>Event</th>
-            <th>Venue</th>
-            <th>Sport</th>
-            <th>Date & Time</th>
-            <th>Register</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for event in events %}
-          <tr>
-
-            <td class="fw-semibold">
-              {{ event.name | capitalize }}
-            </td>
-
-            <td>
-              {% if event.venue %}
-              <i class="bi bi-geo-alt text-muted"></i>
-              {{ event.venue.location }}
-              {% else %}
-              <span class="text-muted">N/A</span>
-              {% endif %}
-            </td>
-
-            <td>
-              {% if event.sport %}
-              <span class="badge bg-info text-dark">
-                {{ event.sport.name }}
-              </span>
-              {% else %}
-              <span class="text-muted">N/A</span>
-              {% endif %}
-            </td>
-
-            <td>
-              <i class="bi bi-clock text-muted"></i>
-              {{ event.date_time }}
-            </td>
-
-            <td>
-              <form action="{{url_for('participant.register_for_event', event_id=event.id, sport_id=event.sport.id)}}" method="post">
-                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                <button class="btn btn-success btn-sm">Register</button>
-                <input name="event_id" value="{{event.id}}" type="hidden">
-              </form>
-            </td>
-
-          </tr>
-          {% endfor %}
-        </tbody>
-
-      </table>
-    </div>
-
-    {% else %}
-    <div class="text-center p-5 text-muted">
-      <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-      <p class="mt-2 mb-0">No events scheduled yet</p>
-    </div>
-    {% endif %}
-
-  </div>
-</div>
-
-{% endblock %} --> #}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {% extends "participant/base.html" %}
 
-{% block title %}<title>Events Dashboard</title>{% endblock %}
+{% block title %}
+<title>Events Dashboard</title>
+{% endblock %}
 
 {% block content %}
 
 <div class="container mt-3">
-
-  <!-- Registered Events -->
-  <div class="mb-4">
-    <h5 class="fw-bold mb-3">Your Registered Events</h5>
-
+  <!-- REGISTERED EVENTS -->
+  <div class="mb-5">
+    <h4 class="fw-bold mb-3">Your Registered Events</h4>
     <div class="card shadow-sm border-0 rounded-3">
       <div class="card-body p-0">
-
         {% if registered_events %}
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
-
             <thead class="table-light">
               <tr>
                 <th>Event</th>
                 <th>Sport</th>
+                <th>Status</th>
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Approved</th>
               </tr>
             </thead>
-
             <tbody>
               {% for er in registered_events %}
               <tr>
+                <!-- EVENT NAME -->
                 <td class="fw-semibold text-capitalize">
-                  {{ er.event.name }}
+                  <a class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-75-hover"
+                    href="{{ url_for('participant.event_details', event_id=er.event.id) }}">
+                    {{ er.event.name }}
+                  </a>
                 </td>
-
+                <!-- SPORT -->
                 <td>
                   {% if er.event.sport %}
-                  <span class="badge bg-info text-dark px-2 py-1">
-                    {{ er.event.sport.name }}
-                  </span>
+                  <span class="badge bg-info text-dark px-2 py-1">{{ er.event.sport.name }}</span>
                   {% else %}
                   <span class="text-muted">N/A</span>
                   {% endif %}
                 </td>
-
+                <!-- STATUS -->
                 <td>
-                  <i class="bi bi-clock text-muted me-1"></i>
+                  {% if er.event.start_date <= today and er.event.end_date>= today %}
+                    <span class="badge bg-success">Ongoing</span>
+                    {% elif er.event.start_date > today %}
+                    <span class="badge bg-primary">Upcoming</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Finished</span>
+                    {% endif %}
+                </td>
+                <!-- START DATE -->
+                <td>
+                  <i class="bi bi-calendar-event text-muted me-1"></i>
                   {{ er.event.start_date }}
                 </td>
+                <!-- END DATE -->
                 <td>
-                  <i class="bi bi-clock text-muted me-1"></i>
+                  <i class="bi bi-calendar-check text-muted me-1"></i>
                   {{ er.event.end_date }}
                 </td>
-
+                <!-- APPROVAL -->
                 <td>
-                  <span>{% if er.approved %} YES {% else %} NO {% endif %} </span>
-                </td> 
+                  {% if er.approved %}
+                  <span class="badge bg-success">
+                    Approved
+                  </span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark">
+                    Pending
+                  </span>
+                  {% endif %}
+                </td>
               </tr>
               {% endfor %}
             </tbody>
-
           </table>
         </div>
         {% else %}
         <div class="text-center py-5 text-muted">
-          <i class="bi bi-calendar-x fs-2"></i>
-          <p class="mt-2 mb-0">You haven't registered for any events yet.</p>
+          <i class="bi bi-calendar-x fs-1"></i>
+          <p class="mt-2 mb-0">
+            You haven't registered for any events yet.
+          </p>
         </div>
         {% endif %}
-
       </div>
     </div>
   </div>
+  <!-- ONGOING EVENTS -->
+  <div class="mb-5">
 
-  <!-- Upcoming Events -->
-  <div>
-    <h5 class="fw-bold mb-3">Upcoming Events</h5>
-
+    <h4 class="fw-bold mb-3 text-warning">
+      Ongoing Events
+    </h4>
     <div class="card shadow-sm border-0 rounded-3">
       <div class="card-body p-0">
-
-        {% if events %}
+        {% if ongoing_events %}
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
-
             <thead class="table-light">
               <tr>
                 <th>Event</th>
-                
                 <th>Sport</th>
-                <th>Start Date</th>
-                <th>End Date</th>
+                <th>Started</th>
+                <th>Ends</th>
                 <th class="text-center">Action</th>
               </tr>
             </thead>
-
             <tbody>
-              {% for event in events %}
+              {% for event in ongoing_events %}
               <tr>
-
+                <!-- EVENT -->
                 <td class="fw-semibold text-capitalize">
-                  {{ event.name }}
+                  <a class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-75-hover"
+                    href="{{ url_for('participant.event_details', event_id=event.id) }}">
+                    {{ event.name }}
+                  </a>
                 </td>
-
+                <!-- SPORT -->
                 <td>
                   {% if event.sport %}
                   <span class="badge bg-info text-dark px-2 py-1">
@@ -287,44 +131,204 @@
                   <span class="text-muted">N/A</span>
                   {% endif %}
                 </td>
-
+                <!-- START DATE -->
                 <td>
-                  <i class="bi bi-clock text-muted me-1"></i>
+                  <i class="bi bi-play-circle text-success me-1"></i>
                   {{ event.start_date }}
                 </td>
+                <!-- END DATE -->
                 <td>
-                  <i class="bi bi-clock text-muted me-1"></i>
+                  <i class="bi bi-stop-circle text-danger me-1"></i>
                   {{ event.end_date }}
                 </td>
-
+                <!-- ACTION -->
                 <td class="text-center">
-                  <form action="{{ url_for('participant.register_for_event', event_id=event.id, sport_id=event.sport.id) }}" method="post">
+                  <form
+                    action="{{ url_for('participant.register_for_event', event_id=event.id, sport_id=event.sport.id) }}"
+                    method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input name="event_id" value="{{ event.id }}" type="hidden">
-
-                    <button class="btn btn-success btn-sm px-3 " onclick="return confirm('You sure want to register for this event?')">
-                      Register
+                    <input type="hidden" name="event_id" value="{{ event.id }}">
+                    <button class="btn btn-warning btn-sm px-3" onclick="return confirm('Join this ongoing event?')">
+                      Join Now
                     </button>
                   </form>
                 </td>
-
               </tr>
               {% endfor %}
             </tbody>
-
           </table>
         </div>
         {% else %}
+
         <div class="text-center py-5 text-muted">
-          <i class="bi bi-calendar-x fs-2"></i>
-          <p class="mt-2 mb-0">No upcoming events available.</p>
+          <i class="bi bi-hourglass-split fs-1"></i>
+          <p class="mt-2 mb-0">
+            No ongoing events available.
+          </p>
         </div>
         {% endif %}
-
       </div>
     </div>
   </div>
+<!-- UPCOMING EVENTS -->
+  <div class="mb-4">
 
+    <h4 class="fw-bold mb-3 text-primary">
+      Upcoming Events
+    </h4>
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-body p-0">
+        {% if upcoming_events %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Event</th>
+                <th>Sport</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for event in upcoming_events %}
+              <tr>
+                <!-- EVENT -->
+                <td class="fw-semibold text-capitalize">
+                  <a class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-75-hover"
+                    href="{{ url_for('participant.event_details', event_id=event.id) }}">
+                    {{ event.name }}
+                  </a>
+                </td>
+                <!-- SPORT -->
+                <td>
+                  {% if event.sport %}
+                  <span class="badge bg-info text-dark px-2 py-1">{{ event.sport.name }}</span>
+                  {% else %}
+                  <span class="text-muted">N/A</span>
+                  {% endif %}
+                </td>
+                <!-- START DATE -->
+                <td>
+                  <i class="bi bi-calendar-event text-muted me-1"></i>
+                  {{ event.start_date }}
+                </td>
+                <!-- END DATE -->
+                <td>
+                  <i class="bi bi-calendar-check text-muted me-1"></i>
+                  {{ event.end_date }}
+                </td>
+                <!-- ACTION -->
+                <td class="text-center">
+                  <form
+                    action="{{ url_for('participant.register_for_event', event_id=event.id, sport_id=event.sport.id) }}"
+                    method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="event_id" value="{{ event.id }}">
+                    <button class="btn btn-success btn-sm px-3"
+                      onclick="return confirm('You sure want to register for this event?')">Register</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calendar-x fs-1"></i>
+          <p class="mt-2 mb-0">No upcoming events available.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <!-- PAST EVENTS -->
+<div class="mb-4">
+
+  <h4 class="fw-bold mb-3 text-secondary">
+    Past Events
+  </h4>
+
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-0">
+
+      {% if past_events %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Event</th>
+              <th>Sport</th>
+              <th>Started</th>
+              <th>Ended</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for event in past_events %}
+            <tr>
+
+              <!-- EVENT -->
+              <td class="fw-semibold text-capitalize">
+                  <a class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-75-hover"
+                    href="{{ url_for('participant.event_details', event_id=event.id) }}">
+                    {{ event.name }}
+                  </a>
+              </td>
+
+              <!-- SPORT -->
+              <td>
+                {% if event.sport %}
+                <span class="badge bg-info text-dark px-2 py-1">
+                  {{ event.sport.name }}
+                </span>
+                {% else %}
+                <span class="text-muted">N/A</span>
+                {% endif %}
+              </td>
+
+              <!-- START DATE -->
+              <td>
+                <i class="bi bi-calendar-event text-muted me-1"></i>
+                {{ event.start_date }}
+              </td>
+
+              <!-- END DATE -->
+              <td>
+                <i class="bi bi-calendar-check text-muted me-1"></i>
+                {{ event.end_date }}
+              </td>
+
+              <!-- STATUS -->
+              <td>
+                <span class="badge bg-secondary">
+                  Finished
+                </span>
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-clock-history fs-1"></i>
+        <p class="mt-2 mb-0">
+          No past events available.
+        </p>
+      </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+</div>
 </div>
 
 {% endblock %}

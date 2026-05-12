@@ -1,0 +1,219 @@
+{% extends 'participant/base.html' %}
+
+{% block content %}
+
+<div class="container py-4">
+    <!-- EVENT HEADER -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="fw-bold mb-1">{{ event.name }}</h2>
+                    <p class="text-muted mb-0">
+                        {{ event.sport.name }}
+                    </p>
+                </div>
+                <div class="text-end">
+                    {% if event.start_date <= today <= event.end_date %}
+                    <span class="badge bg-success fs-6 px-3 py-2">
+                        Ongoing
+                    </span>
+                    {% elif today > event.end_date %}
+                    <span class="badge bg-secondary fs-6 px-3 py-2">
+                        Finished
+                    </span>
+                    {% elif today < event.start_date %}
+                    <span class="badge bg-warning fs-6 px-3 py-2">
+                        Upcoming
+                    </span>
+                    {% endif %}
+                    <div class="small text-muted mt-2">
+                        {{ event.start_date.strftime('%d %b %Y') }}
+                        -
+                        {{ event.end_date.strftime('%d %b %Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- LEFT SIDE -->
+        <div class="col-lg-8">
+            <!-- MATCHES -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        Matches Schedule
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if matches %}
+                        {% for match in matches %}
+                            <div class="border rounded p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="badge bg-primary">
+                                            {{ match.match_stage }}
+                                        </span>
+
+                                        <span class="badge bg-secondary">
+                                            {{ match.match_type }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ match.date_time.strftime('%d %b %Y - %I:%M %p') if match.date_time else 'TBD' }}
+                                    </small>
+                                </div>
+                                <!-- TEAM MATCH -->
+                                {% if match.match_type == 'team' %}
+                                    <div class="row align-items-center text-center">
+                                        <div class="col">
+                                            <h5 class="mb-0">
+                                                {{ match.team1.name if match.team1 else 'TBD' }}
+                                            </h5>
+                                        </div>
+                                        <div class="col-2">
+                                            <strong>VS</strong>
+                                        </div>
+                                        <div class="col">
+                                            <h5 class="mb-0">
+                                                {{ match.team2.name if match.team2 else 'TBD' }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- SINGLE MATCH -->
+                                    <div class="row align-items-center text-center">
+                                        <div class="col">
+                                            <h5 class="mb-0">
+                                                {{ match.player1.user.name if match.player1 else 'TBD' }}
+                                            </h5>
+                                        </div>
+                                        <div class="col-2">
+                                            <strong>VS</strong>
+                                        </div>
+                                        <div class="col">
+                                            <h5 class="mb-0">
+                                                {{ match.player2.user.name if match.player2 else 'TBD' }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Venue:</strong>
+                                        {{ match.venue.location }}
+                                    </div>
+                                    <div>
+                                        {% if match.winner %}
+                                            {% if match.match_type == 'team'%}
+                                            <span class="badge bg-success px-3 py-2">
+                                                Winner:
+                                                {{ match.winner.name }}
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-success px-3 py-2">
+                                                Winner:
+                                                {{ match.winner.user.name }}
+                                            </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark px-3 py-2">
+                                                Upcoming
+                                            </span>
+
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="alert alert-info mb-0">
+                            No matches scheduled yet.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT SIDE -->
+        <div class="col-lg-4">
+
+            <!-- EVENT STANDINGS -->
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        Event Progress
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    {% if grouped_status %}
+
+                        {% for phase, statuses in grouped_status.items() %}
+
+                            <div class="mb-4">
+
+                                <h6 class="fw-bold text-uppercase border-bottom pb-2">
+                                    {{ phase }}
+                                </h6>
+
+                                {% for status in statuses %}
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+
+                                        <div>
+
+                                            {% if status.team %}
+                                                {{ status.team.name }}
+                                            {% elif status.participant %}
+                                                {{ status.participant.name }}
+                                            {% endif %}
+
+                                        </div>
+
+                                        <span class="badge bg-info text-dark">
+                                            {{ phase }}
+                                        </span>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="alert alert-secondary mb-0">
+                            No event progress available yet.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

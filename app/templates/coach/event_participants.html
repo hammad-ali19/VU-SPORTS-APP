@@ -23,6 +23,7 @@
       {% if event.event_participants %}
       <ul class="list-group list-group-flush">
         {% for ep in event.event_participants %}
+          {% if ep.approved %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
 
           <div>
@@ -43,6 +44,7 @@
             View Profile
           </button>
         </li>
+          {% endif %}
         {% endfor %}
       </ul>
       {% else %}

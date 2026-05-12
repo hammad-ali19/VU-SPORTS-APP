@@ -262,7 +262,7 @@ def events():
     coach = current_user.coach
     events = coach.sport.events
     print(type(events))
-    return render_template("coach/events.html", events=events)
+    return render_template("coach/events.html", events=events, today=date.today())
 
 
 @c_bp.route('/event/<int:event_id>/participants')
@@ -460,6 +460,66 @@ def set_match_winner(match_id):
 
     db.session.commit()
     print(f"{type(match.winner)}")
-    return redirect(
-        url_for('coach.event_details', event_id=match.event_id)
+    # return redirect(url_for('coach.event_details', event_id=match.event_id))
+    return redirect(url_for('coach.rank_team', match_id=match_id, winner_id=winner_id, event_id=match.event.id, type=match.match_type))
+
+@c_bp.route('/rank_team/<int:match_id>/<int:winner_id>/<int:event_id>/<type>', methods=['POST', 'GET'])
+def rank_team(match_id, winner_id, event_id, type):
+    # match = db.session.get(Match, int(match_id))
+    # winner = match.winner
+
+    if request.method == 'POST':
+
+        selected_status = request.form.get('team_phase_in_event')
+
+        if type == 'team':
+
+            status_record = EventTeamStatus.query.filter_by(
+                event_id=event_id,
+                team_id=winner_id
+            ).first()
+
+        else:
+
+            status_record = EventTeamStatus.query.filter_by(
+                event_id=event_id,
+                participant_id=winner_id
+            ).first()
+
+        # Create record if not exists
+        if not status_record:
+
+            status_record = EventTeamStatus(
+                event_id=event_id,
+                team_id=winner_id if type == 'team' else None,
+                participant_id=winner_id if type != 'team' else None,
+                team_phase_in_event=selected_status
+            )
+
+            db.session.add(status_record)
+
+        else:
+            status_record.team_phase_in_event = selected_status
+
+        db.session.commit()
+
+        return redirect(
+            url_for('coach.event_details', event_id=event_id)
+        )
+
+    # GET REQUEST
+
+    if type == 'team':
+        winner = db.session.get(Team, winner_id)
+
+    else:
+        winner = db.session.get(Participant, winner_id)
+
+    return render_template(
+        'coach/rank_team.html',
+        winner=winner,
+        event_id=event_id,
+        type=type
     )
+
+    return render_template("coach/rank_team.html", winner=winner, type=type, event_id=event_id)

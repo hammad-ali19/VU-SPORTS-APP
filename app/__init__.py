@@ -3,6 +3,7 @@ from flask import Flask, render_template, session
 from .extensions import csrf, db, login_manager, migrate, mail, socketio
 from .models import User
 from .listeners import *
+from datetime import date, datetime
 
 
 def create_app():
@@ -43,6 +44,13 @@ def create_app():
         # return the items for viewing in the browser
         return str(session.items())
 
+    @app.context_processor
+    def inject_today():
+        now = datetime.now()
+        today = now.date()
+        return {'today': today}
+
+    
     # Register Blueprints
     from .admin import a_bp
     from .auth import auth_bp
