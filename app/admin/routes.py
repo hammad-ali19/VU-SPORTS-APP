@@ -128,7 +128,7 @@ def add_sport():
 def manage_event_scheduling():
     venues = db.session.execute(select(Venue)).scalars().all()
     sports = db.session.execute(select(Sport)).scalars().all()
-    events = db.session.execute(select(Event)).scalars().all()
+    events = db.session.execute(select(Event).order_by(Event.start_date.desc())).scalars().all()
     return render_template("admin/event_scheduling.html", venues=venues, sports=sports, events=events)
 
 @a_bp.route("/announcements", methods=['GET', 'POST'])

@@ -280,7 +280,24 @@ def event_details(event_id):
     print(e.sport.teams)
     teams = e.sport.teams
     matches = e.matches
-    return render_template('coach/event_details.html', event=e, teams=teams, matches=matches)
+
+    team_statuses = (
+        EventTeamStatus.query
+        .filter(EventTeamStatus.event_id == event_id)
+        .all()
+    )
+    grouped_status = {}
+
+    for status in team_statuses:
+        phase = status.team_phase_in_event
+
+        if phase not in grouped_status:
+            grouped_status[phase] = []
+
+        grouped_status[phase].append(status)
+
+    # print(matches[0])
+    return render_template('coach/event_details.html', event=e, teams=teams, matches=matches, grouped_status=grouped_status)
 
 
 @c_bp.route('event_details/<int:event_id>/create_match', methods=['POST', 'GET'])
@@ -288,7 +305,14 @@ def create_match(event_id):
 
     event = db.session.get(Event, int(event_id))
     teams = event.sport.teams
-    participants = event.sport.participants
+    participants_ = event.sport.participants
+    participants = [
+        reg.participant
+        for reg in event.event_participants
+        if reg.approved
+    ]
+
+    print(type(participants_), type(participants))
     venues = db.session.execute(select(Venue)).scalars().all()
     event_start = event.start_date
     event_end = event.end_date

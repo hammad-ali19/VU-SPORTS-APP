@@ -32,7 +32,7 @@
     <div class="row mb-4">
 
         <!-- Teams -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0">Participating Teams</h5>
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Event Stats -->
-        <div class="col-md-6 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Event Summary</h5>
@@ -96,6 +96,46 @@
                         </span>
                     </div>
 
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <!-- EVENT STANDINGS -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        Event Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if grouped_status %}
+                        {% for phase, statuses in grouped_status.items() %}
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-uppercase border-bottom pb-2">
+                                    {{ phase }}
+                                </h6>
+                                {% for status in statuses %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            {% if status.team %}
+                                                {{ status.team.name }}
+                                            {% elif status.participant %}
+                                                {{ status.participant.user.name }}
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-info text-dark">
+                                            {{ phase }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-secondary mb-0">
+                            No event progress available yet.
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -278,4 +318,3 @@
 
 </div>
 {% endblock %}
-```

@@ -1,6 +1,6 @@
 from flask import redirect, render_template, url_for, request, flash
 from flask_login import current_user, login_required
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from datetime import date
 from .. import db
 from ..decorators import required_role
@@ -274,20 +274,75 @@ def event_details(event_id):
         .filter(EventTeamStatus.event_id == event_id)
         .all()
     )
-
+    print(f"team_statuses: {team_statuses}")
     grouped_status = {}
 
     for status in team_statuses:
         phase = status.team_phase_in_event
-
         if phase not in grouped_status:
             grouped_status[phase] = []
-
         grouped_status[phase].append(status)
+    print(f"grouped_status: {grouped_status}")
+    return render_template("participant/event_details.html", event=event, matches=matches, grouped_status=grouped_status)
 
-    return render_template(
-        "participant/event_details.html",
-        event=event,
-        matches=matches,
-        grouped_status=grouped_status
+@p_bp.route('/single-history')
+def participant_single_history():
+    participant_id = current_user.participant.id
+    # Get all past single-player matches of participant
+    print(f"participant: {current_user.participant}")
+    matches = (
+        db.session.query(Match)
+        .join(Event, Match.event_id == Event.id)
+        .join(
+            EventRegistration,
+            EventRegistration.event_id == Event.id
+        )
+        .filter(
+            Match.match_type == 'single',
+            # Event.end_date >= date.today(),
+            EventRegistration.participant_id == participant_id,
+            EventRegistration.approved == True,
+
+            or_(
+                Match.player1_id == participant_id,
+                Match.player2_id == participant_id
+            )
+        )
+        .order_by(Event.end_date.desc(), Match.date_time.asc())
+        .all()
     )
+    print(f"matches: {matches}")
+    # Group matches event-wise
+    events_data = {}
+    for match in matches:
+        event = match.event
+        if event.id not in events_data:
+            events_data[event.id] = {
+                "event": event,
+                "matches": [],
+                "result": None
+            }
+        events_data[event.id]["matches"].append(match)
+    # Determine participant result in each event
+    for data in events_data.values():
+        event_matches = data["matches"]
+        # latest played match in tournament
+        latest_match = event_matches[-1]
+        won_latest = (latest_match.winner_participant_id == participant_id)
+
+        stage = latest_match.match_stage.lower()
+
+        if won_latest:
+            if stage == "final":
+                result = "Champion"
+            else:
+                result = f"Won {latest_match.match_stage}"
+        else:
+            if stage == "final":
+                result = "Runner-up"
+            else:
+                result = f"Reached {latest_match.match_stage}"
+
+        data["result"] = result
+    print(f"events data: {events_data}")
+    return render_template('participant/participant_single_history.html', events_data=events_data.values())

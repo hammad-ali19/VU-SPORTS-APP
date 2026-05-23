@@ -40,7 +40,8 @@
                         {% if e.start_date <= today <=e.end_date %} <span class='badge bg-success'> ongoing </span>
                             {%elif e.start_date > today %}
                             <span class='badge bg-warning'> upcoming </span>
-
+                            {% elif e.end_date < today %}
+                            <span class='badge bg-secondary'> Finished </span>
                             {% endif %}
                     </p>
 

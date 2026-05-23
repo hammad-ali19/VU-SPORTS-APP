@@ -215,6 +215,7 @@
               <th>Sport</th>
               <th>Start Date</th>
               <th>End Date</th>
+              <th>Status</th>
               <th class="text-end">Action</th>
             </tr>
           </thead>
@@ -245,6 +246,15 @@
               <td>
                 <i class="bi bi-clock text-muted"></i>
                 {{ event.end_date }}
+              </td>
+              <td>
+                {% if event.start_date <= today <=event.end_date %}
+                  <span class='badge bg-success'> ongoing </span>
+                {%elif event.start_date > today %}
+                  <span class='badge bg-warning'> upcoming </span>
+                {% elif event.end_date < today %}
+                  <span class='badge bg-secondary'> Finished </span>
+                {% endif %}
               </td>
               <td class="text-end">
                 <form action="{{url_for('admin.delete_event', event_id=event.id)}}" method="post">

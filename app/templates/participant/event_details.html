@@ -123,97 +123,59 @@
                                             <span class="badge bg-warning text-dark px-3 py-2">
                                                 Upcoming
                                             </span>
-
                                         {% endif %}
                                     </div>
-
                                 </div>
-
                             </div>
-
                         {% endfor %}
-
                     {% else %}
-
                         <div class="alert alert-info mb-0">
                             No matches scheduled yet.
                         </div>
-
                     {% endif %}
-
                 </div>
-
             </div>
-
         </div>
-
-
         <!-- RIGHT SIDE -->
         <div class="col-lg-4">
-
             <!-- EVENT STANDINGS -->
             <div class="card shadow-sm border-0">
-
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
                         Event Progress
                     </h5>
                 </div>
-
                 <div class="card-body">
-
                     {% if grouped_status %}
-
                         {% for phase, statuses in grouped_status.items() %}
-
                             <div class="mb-4">
-
                                 <h6 class="fw-bold text-uppercase border-bottom pb-2">
                                     {{ phase }}
                                 </h6>
-
                                 {% for status in statuses %}
-
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-
                                         <div>
-
                                             {% if status.team %}
                                                 {{ status.team.name }}
                                             {% elif status.participant %}
-                                                {{ status.participant.name }}
+                                                {{ status.participant.user.name }}
                                             {% endif %}
-
                                         </div>
-
                                         <span class="badge bg-info text-dark">
                                             {{ phase }}
                                         </span>
-
                                     </div>
-
                                 {% endfor %}
-
                             </div>
-
                         {% endfor %}
-
                     {% else %}
-
                         <div class="alert alert-secondary mb-0">
                             No event progress available yet.
                         </div>
-
                     {% endif %}
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
-
 {% endblock %}

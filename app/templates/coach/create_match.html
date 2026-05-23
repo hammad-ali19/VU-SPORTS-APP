@@ -78,8 +78,8 @@
                                     <option value="">Select side one</option>
 
                                     {% for p in participants %}
-                                    <option value="{{p.participant.id}}">
-                                        {{p.participant.user.name}}
+                                    <option value="{{p.id}}">
+                                        {{p.user.name}}
                                     </option>
                                     {% endfor %}
                                     {% endif %}
@@ -94,8 +94,8 @@
                                     <option value="">Select side two</option>
 
                                     {% for p in participants %}
-                                    <option value="{{p.participant.id}}">
-                                        {{p.participant.user.name}}
+                                    <option value="{{p.id}}">
+                                        {{p.user.name}}
                                     </option>
                                     {% endfor %}
                                     {% endif %}
