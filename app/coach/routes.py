@@ -305,18 +305,15 @@ def create_match(event_id):
 
     event = db.session.get(Event, int(event_id))
     teams = event.sport.teams
-    participants_ = event.sport.participants
     participants = [
         reg.participant
         for reg in event.event_participants
         if reg.approved
     ]
 
-    print(type(participants_), type(participants))
     venues = db.session.execute(select(Venue)).scalars().all()
     event_start = event.start_date
     event_end = event.end_date
-    print(event_start, event_end)
     
     if request.method == 'POST':
         date = request.form.get('date')
@@ -328,13 +325,9 @@ def create_match(event_id):
         team2 = request.form.get('team_side2')
         player1 = request.form.get('single_side1')
         player2 = request.form.get('single_side2')
-        print(match_type, stage, venue_id, date, time, team1, team2, player1, player2)
-        errors = []
 
-            
         # BASIC VALIDATION
         
-
         if match_type not in ['single', 'team']:
             flash("Please select a valid match type.", "danger")
             return redirect(url_for('coach.create_match', event_id=event_id))
@@ -380,29 +373,24 @@ def create_match(event_id):
             if not side1 or not side2:
                 flash("Please select both participants.")
                 return redirect(url_for('coach.create_match', event_id=event_id))
-
             elif side1 == side2:
                 flash("A participant cannot play against themseleves.", "danger")
                 return redirect(url_for('coach.create_match', event_id=event_id))
 
-        print(f'date: {type(date)}, event_start: {type(event_start)}')
         date = datetime.strptime(date, "%Y-%m-%d").date()
-
+        datetime.weekday(datetime)
         if not event_start <= date <= event_end:
             flash("selected date is invalid for this event", category='warning')
             return redirect(url_for('coach.create_match', event_id=event_id))
-            print("selected date is invalid for this event")
 
         match_datetime = None
 
         if date and time:
-
             try:
                 match_datetime = datetime.strptime(
                     f"{date} {time}",
                     "%Y-%m-%d %H:%M"
                 )
-
                 # check if venue already booked
                 existing_match = db.session.execute(
                     select(Match).where(
@@ -410,32 +398,12 @@ def create_match(event_id):
                         Match.date_time == match_datetime
                     )
                 ).scalar_one_or_none()
-
                 if existing_match:
                     flash("Another match is already scheduled at this venue on this date and time.", "danger")
                     return redirect(url_for('coach.create_match', event_id=event_id))
-                    print('match already exists')
-                    # return redirect(url_for('coach.create_match', event_id=event_id))
-
             except ValueError:
-                errors.append('Invalid date or time format.')
-                        
-            # SHOW ERRORS
-
-            if errors:
-
-                for error in errors:
-                    flash(error, 'danger')
-
-                return render_template(
-                    'coach/create_match.html',
-                    venues=venues,
-                    event=event,
-                    teams=teams,
-                    participants=participants
-                )
-
-            # flash('Match validated successfully.', 'success')
+                flash('Invalid date or time format.', 'danger')
+                return redirect(url_for('coach.create_match', event_id=event_id))
 
         new_match = Match(
         match_type=match_type,
@@ -457,7 +425,6 @@ def create_match(event_id):
 
         db.session.add(new_match)
         db.session.commit()
-
         flash('Match created successfully.', 'success')
         return redirect(url_for('coach.create_match', event_id=event_id))
 
@@ -471,79 +438,54 @@ def create_match(event_id):
     
 @c_bp.route('/set_match_winner/<int:match_id>', methods=['POST'])
 def set_match_winner(match_id):
-
     match = db.session.get(Match, match_id)
-
     winner_id = request.form.get('winner_id')
 
     if match.match_type == 'team':
         match.winner_team_id = int(winner_id)
-
     else:
         match.winner_participant_id = int(winner_id)
 
     db.session.commit()
-    print(f"{type(match.winner)}")
-    # return redirect(url_for('coach.event_details', event_id=match.event_id))
     return redirect(url_for('coach.rank_team', match_id=match_id, winner_id=winner_id, event_id=match.event.id, type=match.match_type))
 
 @c_bp.route('/rank_team/<int:match_id>/<int:winner_id>/<int:event_id>/<type>', methods=['POST', 'GET'])
 def rank_team(match_id, winner_id, event_id, type):
-    # match = db.session.get(Match, int(match_id))
-    # winner = match.winner
-
     if request.method == 'POST':
-
         selected_status = request.form.get('team_phase_in_event')
-
         if type == 'team':
-
             status_record = EventTeamStatus.query.filter_by(
                 event_id=event_id,
                 team_id=winner_id
             ).first()
-
         else:
-
             status_record = EventTeamStatus.query.filter_by(
                 event_id=event_id,
                 participant_id=winner_id
             ).first()
-
         # Create record if not exists
         if not status_record:
-
             status_record = EventTeamStatus(
                 event_id=event_id,
                 team_id=winner_id if type == 'team' else None,
                 participant_id=winner_id if type != 'team' else None,
                 team_phase_in_event=selected_status
             )
-
             db.session.add(status_record)
-
         else:
             status_record.team_phase_in_event = selected_status
-
         db.session.commit()
-
-        return redirect(
-            url_for('coach.event_details', event_id=event_id)
-        )
+        return redirect(url_for('coach.event_details', event_id=event_id))
 
     # GET REQUEST
 
     if type == 'team':
         winner = db.session.get(Team, winner_id)
-
     else:
         winner = db.session.get(Participant, winner_id)
-
     return render_template(
         'coach/rank_team.html',
         winner=winner,
         event_id=event_id,
         type=type
     )
-
-    return render_template("coach/rank_team.html", winner=winner, type=type, event_id=event_id)
