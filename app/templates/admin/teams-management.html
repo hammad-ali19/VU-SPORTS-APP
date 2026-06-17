@@ -58,7 +58,7 @@
                                 {% else %}
                                 <form method="POST" action="{{url_for('admin.remove_team', team_id=t.id)}}">
                                     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                                    <button type="submit" class="btn btn-sm btn-danger">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove {{t.name}}')">
                                         Remove
                                     </button>
                                 </form>

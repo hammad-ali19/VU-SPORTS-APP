@@ -113,12 +113,13 @@ def login():
 		role = form.role.data
 		stmt = select(User).where(User.email==email)
 		user = db.session.execute(stmt).scalars().first()
-		pass_valid = check_password_hash(user.password, password)
 		if not user:
 			flash("Account does not exist. Please register first.", category="danger")
 			return render_template("login.html", form=form)
 
-		elif role == 'admin':
+		pass_valid = check_password_hash(user.password, password)
+
+		if role == 'admin':
 			if user.email == email and pass_valid and user.role.value == role:
 				login_user(user)
 				flash("You have logged in successfully", category='success')

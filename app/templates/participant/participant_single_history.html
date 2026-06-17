@@ -1,28 +1,19 @@
 {% extends 'participant/base.html' %}
-
 {% block content %}
-
 {% for item in events_data %}
-
 <div class="card mb-3">
     <div class="card-body">
-
         <h4>{{ item.event.name }}</h4>
-
         <p>
             {{ item.event.start_date }}
             -
             {{ item.event.end_date }}
         </p>
-
         <p>
             Result:
             <strong>{{ item.result }}</strong>
         </p>
-
     </div>
 </div>
-
 {% endfor %}
-
 {% endblock content %}
