@@ -98,7 +98,7 @@ def register():
 					"COACH REGISTRATION REQUEST! ",
 					f"Dear {user.name}, \nYour registration request has been accepted. You will be informed via email once amin will approve you request. After that you will be able to Login to your account.",
 					[user.email])
-				flash("Successfully registered you account! Please wait for admin approval before login ", category='info')
+				flash("Successfully registered your account! Please wait for admin approval before login ", category='info')
 				return redirect(url_for("auth.login"))
 
 	return render_template("register.html", form=form)

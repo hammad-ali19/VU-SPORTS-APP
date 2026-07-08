@@ -66,7 +66,8 @@
                 Welcome, {{ n | capitalize }}
             {% endwith %}
         </span>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm"
+            onclick="return confirm('Are you sure you want to log out?')">
             Logout
         </a>
     </div>
@@ -98,13 +99,13 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link 
                     {% if request.endpoint == 'coach.manage_participants' %}active{% endif %}"
                     href="{{ url_for('coach.manage_participants') }}">
                         Manage Participants
                     </a>
-                </li>
+                </li> -->
 
                 <li class="nav-item">
                     <a class="nav-link 

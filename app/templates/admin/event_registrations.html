@@ -1,55 +1,87 @@
-{% extends 'admin/base.html' %}
+{% extends "admin/base.html" %}
 
 {% block content %}
 
-<div>Hello world</div>
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">Event Registration Requests</h4>
+        </div>
 
-{% if event_registration_requests %}
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Event Name</th>
-            <th>Sport</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    {% for er in event_registration_requests %}
-    <tbody>
-        <tr>
-            <td>
-                {{er.participant.user.name}}
-            </td>
-        
-    
-            <td>
-                {{er.event.name}}
-            </td>
+        <div class="card-body">
 
-    
-            <td>
-                {{er.event.sport.name}}
-            </td>
+            {% if event_registration_requests %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Participant</th>
+                            <th>Event</th>
+                            <th>Sport</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
 
-    
-            <td>
-                <form action="{{url_for('admin.approve_or_reject_event_registration', per_id=er.id)}}" method="post" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                    {% if er.approved %}
-                        <button disabled>Approved</button>
-                    
-                    {% else %}
-                        <button name="btn" value="1">Approve</button>
-                        <button name="btn" value="0">Reject</button>
-                    {% endif %}
+                    <tbody>
+                        {% for er in event_registration_requests %}
+                        <tr>
+                            <td>{{ er.participant.user.name }}</td>
+                            <td>{{ er.event.name }}</td>
+                            <td>{{ er.event.sport.name }}</td>
 
-                </form>
-            </td>
-        </tr>
-    </tbody>
-    
-    {% endfor %}
-</table>
-{% endif %}
+                            <td class="text-center">
+                                <form
+                                    action="{{ url_for('admin.approve_or_reject_event_registration', per_id=er.id) }}"
+                                    method="POST"
+                                    class="d-inline"
+                                >
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                    {% if er.approved %}
+                                        <button
+                                            type="button"
+                                            class="btn btn-success btn-sm"
+                                            disabled
+                                        >
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Approved
+                                        </button>
+                                    {% else %}
+                                        <button
+                                            type="submit"
+                                            name="btn"
+                                            value="1"
+                                            class="btn btn-success btn-sm"
+                                        >
+                                            Approve
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            name="btn"
+                                            value="0"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Reject this registration request?');"
+                                        >
+                                            Reject
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="text-center py-5">
+                <h5 class="text-muted">No pending registration requests.</h5>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
 
 {% endblock %}

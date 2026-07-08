@@ -67,7 +67,8 @@
             {% endwith %} #}
             Welcome, {{ current_user.name | capitalize}}
         </span>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-light btn-sm"
+            onclick="return confirm('Are you sure you want to log out?')">
             Logout
         </a>
     </div>
